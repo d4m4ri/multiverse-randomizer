@@ -1,0 +1,141 @@
+package com.damari.mvrnd.tests.coin;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Test;
+
+import com.damari.mvrnd.coin.Coin;
+import com.damari.mvrnd.coin.CoinRandom;
+import com.damari.mvrnd.coin.CoinSecureRandom;
+import com.damari.mvrnd.coin.CoinSplittableRandom;
+import com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom;
+
+public class TestCoin {
+
+	@Test
+	public void givenFairCoinThenExpectCoinTossesToBeInRangeOfTwoStandardDeviations() {
+		long tossCount = 3_000_000;
+		float twoSD = 13.6f / 100f;
+		long[] sum = tossLotsOfFairCoins(tossCount);
+		for (int i = 0; i < sum.length; i++) {
+			assertTrue("Sum of coins should be >= -" + twoSD + " (2SD)", sum[i] >= -((1f - twoSD) * tossCount));
+			assertTrue("Sum of coins should be <= " + twoSD + " (2SD)", sum[i] <= ((1f - twoSD) * tossCount));
+		}
+	}
+
+	@Test
+	public void givenFairCoinThenExpectCoinTossesToBeInRangeOfOneStandardDeviations() {
+		long tossCount = 3_000_000;
+		float oneSD = 34.1f / 100f;
+		long[] sum = tossLotsOfFairCoins(tossCount);
+		for (int i = 0; i < sum.length; i++) {
+			assertTrue("Sum of coins should be >= -" + oneSD + " (1SD)", sum[i] >= -((1f - oneSD) * tossCount));
+			assertTrue("Sum of coins should be <= " + oneSD + " (1SD)", sum[i] <= ((1f - oneSD) * tossCount));
+		}
+	}
+
+	@Test
+	public void givenTailsOnlyProbabilityThenExpectTailsOnly() {
+		List<Coin> coins = Arrays.asList(
+				new CoinSecureRandom(0f),
+				new CoinRandom(0f),
+				new CoinSplittableRandom(0f),
+				new CoinXoRoShiRo128PlusRandom(0f));
+		for (int i = 0; i < coins.size(); i++) {
+			for (int n = 0; n < 1_000; n++) {
+				assertEquals("Expected tail", Coin.TAIL, coins.get(i).toss());
+			}
+		}
+	}
+
+	@Test
+	public void givenHeadsOnlyProbabilityThenExpectHeadsOnly() {
+		List<Coin> coins = Arrays.asList(
+				new CoinSecureRandom(100f),
+				new CoinRandom(100f),
+				new CoinSplittableRandom(100f),
+				new CoinXoRoShiRo128PlusRandom(100f));
+		for (int i = 0; i < coins.size(); i++) {
+			for (int n = 0; n < 1_000; n++) {
+				assertEquals("Expected head", Coin.HEAD, coins.get(i).toss());
+			}
+		}
+	}
+
+	@Test
+	public void givenCoinSeedThenExpectDeterministicOutcome() throws Exception {
+		List<Coin> coins = Arrays.asList(
+				//new CoinSecureRandom(),
+				new CoinRandom(),
+				//new CoinSplittableRandom(),
+				new CoinXoRoShiRo128PlusRandom());
+		boolean[] tosses = new boolean[500];
+		for (int c = 0; c < coins.size(); c++) {
+			Coin coin = coins.get(c);
+			coin.setSeed(123L);
+			for (int i = 0; i < 500; i++) {
+				tosses[i] = coin.toss();
+			}
+			coin.setSeed(123L);
+			for (int i = 0; i < 500; i++) {
+				assertEquals("Expected deterministic coin outcome for coin[" + i + "] at iteration " + i,
+						tosses[i], coin.toss());
+			}
+		}
+	}
+
+	@Test
+	public void givenCoinTossThenDontExpectAnyLongSerieOfHeadsOrTails() {
+		List<Coin> coins = Arrays.asList(
+				new CoinSecureRandom(),
+				new CoinRandom(),
+				new CoinSplittableRandom(),
+				new CoinXoRoShiRo128PlusRandom());
+		for (int c = 0; c < coins.size(); c++) {
+			Coin coin = coins.get(c);
+			boolean prevToss = false;
+			int seq = 0;
+			for (int i = 0; i < 10_000; i++) {
+				boolean toss = coin.toss();
+				if (i != 0 && toss == prevToss) {
+					seq++;
+					assertTrue("Got " + Coin.describe(toss) + " " + seq +
+							" times in a row using coin " + coin, seq < 18);
+				} else {
+					seq = 0;
+				}
+				prevToss = toss;
+			}
+		}
+	}
+
+	private long[] tossLotsOfFairCoins(long tossCount) {
+		List<Coin> coins = Arrays.asList(
+				new CoinSecureRandom(50.00f),
+				new CoinRandom(50.00f),
+				new CoinSplittableRandom(50.00f),
+				new CoinXoRoShiRo128PlusRandom(50.00f));
+		long sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0;
+		for (long i = 0; i < tossCount; i++) {
+			sum1 += coins.get(0).toss() == Coin.HEAD ? 1 : -1;
+			sum2 += coins.get(1).toss() == Coin.HEAD ? 1 : -1;
+			sum3 += coins.get(2).toss() == Coin.HEAD ? 1 : -1;
+			sum4 += coins.get(3).toss() == Coin.HEAD ? 1 : -1;
+		}
+		assertFalse("Coin outside positive boundary", sum1 > tossCount);
+		assertFalse("Coin outside negative boundary", sum1 <= -tossCount);
+		assertFalse("Coin outside positive boundary", sum2 > tossCount);
+		assertFalse("Coin outside negative boundary", sum2 <= -tossCount);
+		assertFalse("Coin outside positive boundary", sum3 > tossCount);
+		assertFalse("Coin outside negative boundary", sum3 <= -tossCount);
+		assertFalse("Coin outside positive boundary", sum4 > tossCount);
+		assertFalse("Coin outside negative boundary", sum4 <= -tossCount);
+		return new long[] {sum1, sum2, sum3, sum4};
+	}
+
+}
