@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom;
+import com.damari.mvrnd.tests.algorithm.TestBuyAndHoldAlgoProfitability;
 
 public class TestTradersFallacy {
 

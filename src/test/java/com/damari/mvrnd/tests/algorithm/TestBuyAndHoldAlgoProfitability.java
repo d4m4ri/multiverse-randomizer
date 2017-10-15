@@ -1,4 +1,4 @@
-package com.damari.mvrnd.tests;
+package com.damari.mvrnd.tests.algorithm;
 
 import static com.damari.mvrnd.algorithm.Strategy.dateTimeFormatter;
 import static com.damari.mvrnd.algorithm.Strategy.price;
@@ -11,6 +11,7 @@ import com.damari.mvrnd.algorithm.BuyAndHoldConfig;
 import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom;
 import com.damari.mvrnd.data.Statistics;
+import com.damari.mvrnd.tests.TestTrade;
 
 public class TestBuyAndHoldAlgoProfitability {
 
