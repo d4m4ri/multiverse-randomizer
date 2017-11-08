@@ -77,11 +77,11 @@ public class TestTrade {
 		boolean completedOk = false;
 		try {
 			completedOk = executorService.awaitTermination(5L, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-        	log.error("Exception while waiting on outstanding threads to complete.", e);
-        }
-        log.info(completedOk ? "All threads were consumed OK." : "Some threads did not complete and was terminated.");
-        if (!completedOk) executorService.shutdownNow();
+		} catch (InterruptedException e) {
+			log.error("Exception while waiting on outstanding threads to complete.", e);
+		}
+		log.info(completedOk ? "All threads were consumed OK." : "Some threads did not complete and was terminated.");
+		if (!completedOk) executorService.shutdownNow();
 
 		totTime.stop();
 		log.info("Total time: {}sec)", totTime.getSecs());
