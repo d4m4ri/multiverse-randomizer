@@ -1,7 +1,7 @@
 /*
  * Visualize the periods using random walk.
- * For more info see Khan Academy video:
- * https://www.youtube.com/watch?v=GtOt7EBNEwQ
+ * For more info see Khan Academy video
+ * @see https://www.youtube.com/watch?v=GtOt7EBNEwQ
  */
 package com.damari.mvrnd.tests.coin;
 
@@ -18,10 +18,12 @@ import java.util.List;
 import org.junit.Test;
 
 import com.damari.mvrnd.coin.Coin;
+import com.damari.mvrnd.coin.CoinNeumannENIACRandom;
 import com.damari.mvrnd.coin.CoinRandom;
 import com.damari.mvrnd.coin.CoinSecureRandom;
 import com.damari.mvrnd.coin.CoinSplittableRandom;
 import com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom;
+import com.damari.mvrnd.util.Timer;
 
 public class TestThePeriod {
 
@@ -38,14 +40,17 @@ public class TestThePeriod {
 				new CoinSecureRandom(),
 				new CoinRandom(),
 				new CoinSplittableRandom(),
-				new CoinXoRoShiRo128PlusRandom());
+				new CoinXoRoShiRo128PlusRandom(),
+				new CoinNeumannENIACRandom());
 		int[] colors = {
 				new Color(255,   0,   0).getRGB(),
 				new Color(  0, 255,   0).getRGB(),
 				new Color(255,   0, 255).getRGB(),
-				new Color(  0, 255, 255).getRGB()};
+				new Color(  0, 255, 255).getRGB(),
+				new Color(127, 127, 127).getRGB()};
 		List<String> results = new ArrayList<>();
 
+		Timer timer = new Timer();
 		for (int c = 0; c < coins.size(); c++) {
 			int x = width / 2;
 			int y = height / 2;
@@ -54,11 +59,14 @@ public class TestThePeriod {
 			boolean xAxis = true;
 
 			// Coin info
+			frame.copyCanvas();
 			frame.text(200, 200, "Coin: " + coin, new Color(255,255,255), new Font("Serif", Font.BOLD, 24));
 			Thread.sleep(4000);
+			frame.restoreCanvas();
 
 			// Random walk
-			for (int i = 0; i < 50_000_000; i++) {
+			timer.start();
+			for (int i = 0; i < 30_000_000; i++) {
 				// Movement
 				boolean toss = coin.toss();
 				if (xAxis) {
@@ -77,6 +85,7 @@ public class TestThePeriod {
 
 				frame.plot(x, y, color);
 			}
+			timer.stop();
 
 			// Coverage
 			int pixelMatch = 0;
@@ -89,17 +98,20 @@ public class TestThePeriod {
 			}
 
 			float matchPercent = 100f * pixelMatch / pixels;
-			assertTrue("Found unfair coin: " + coin + ", match percent " + matchPercent + "%", matchPercent >= 97.000f);
+			assertTrue("Found unfair coin: " + coin + ", match percent " + matchPercent + "%", matchPercent >= 92.000f);
 			String matchPercentStr = new BigDecimal(matchPercent).setScale(3, RoundingMode.HALF_UP).toString();
-			results.add("Matched: " + pixelMatch + "/" + pixels + " (~" + matchPercentStr + "%)");
+			results.add("Matched: " + pixelMatch + "/" + pixels + " (~" + matchPercentStr + "%) - took " + timer.getMinutesAndSeconds());
+
+			frame.copyCanvas();
 			frame.text(200, 240, results.get(c), new Color(255,255,255), new Font("Serif", Font.BOLD, 24));
 			Thread.sleep(6000);
+			frame.restoreCanvas();
 		}
 
 		// Summary
 		frame.fillCanvas(bgColor);
 		for (int c = 0; c < coins.size(); c++) {
-			frame.text(200, 180 + c * 40, coins.get(c) + " = " + results.get(c), new Color(colors[c]), new Font("Serif", Font.BOLD, 24));
+			frame.text(200, 180 + c * 40, coins.get(c) + " - " + results.get(c), new Color(colors[c]), new Font("Serif", Font.BOLD, 24));
 		}
 		Thread.sleep(15000);
 	}

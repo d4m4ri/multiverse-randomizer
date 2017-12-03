@@ -36,7 +36,7 @@ public class CoinThreadLocalRandom extends Coin {
 
 	@Override
 	protected String getLabel() {
-		return "Random";
+		return "ThreadLocalRandom";
 	}
 
 }

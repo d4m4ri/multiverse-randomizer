@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -16,6 +18,7 @@ public class FrameAndCanvas extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	private BufferedImage canvas;
+	private BufferedImage canvasCopy;
 
 	public FrameAndCanvas(String topic, int width, int height, Color bgColor) {
 		canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -57,7 +60,7 @@ public class FrameAndCanvas extends JPanel {
 		g2d.setFont(f);
 		g2d.drawString(text, x, y);
 		g2d.dispose();
-        repaint();
+		repaint();
 	}
 
 	public void plot(int x, int y, int rgb) {
@@ -77,6 +80,20 @@ public class FrameAndCanvas extends JPanel {
 			}
 		}
 		repaint();
+	}
+
+	public void copyCanvas() {
+		 ColorModel colorModel = canvas.getColorModel();
+		 boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+		 WritableRaster raster = canvas.copyData(null);
+		 canvasCopy = new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
+	}
+
+	public void restoreCanvas() {
+		 ColorModel colorModel = canvasCopy.getColorModel();
+		 boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+		 WritableRaster raster = canvasCopy.copyData(null);
+		 canvas = new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
 	}
 
 }
