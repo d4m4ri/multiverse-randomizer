@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.damari.mvrnd.coin.Coin;
+import com.damari.mvrnd.coin.CoinNeumannENIACRandom;
 import com.damari.mvrnd.coin.CoinRandom;
 import com.damari.mvrnd.coin.CoinSecureRandom;
 import com.damari.mvrnd.coin.CoinSplittableRandom;
@@ -41,11 +42,7 @@ public class TestCoin {
 
 	@Test
 	public void givenTailsOnlyProbabilityThenExpectTailsOnly() {
-		List<Coin> coins = Arrays.asList(
-				new CoinSecureRandom(0f),
-				new CoinRandom(0f),
-				new CoinSplittableRandom(0f),
-				new CoinXoRoShiRo128PlusRandom(0f));
+		List<Coin> coins = allCoins(0.000f);
 		for (int i = 0; i < coins.size(); i++) {
 			for (int n = 0; n < 1_000; n++) {
 				assertEquals("Expected tail", Coin.TAIL, coins.get(i).toss());
@@ -55,14 +52,10 @@ public class TestCoin {
 
 	@Test
 	public void givenHeadsOnlyProbabilityThenExpectHeadsOnly() {
-		List<Coin> coins = Arrays.asList(
-				new CoinSecureRandom(100f),
-				new CoinRandom(100f),
-				new CoinSplittableRandom(100f),
-				new CoinXoRoShiRo128PlusRandom(100f));
+		List<Coin> coins = allCoins(100.000f);
 		for (int i = 0; i < coins.size(); i++) {
-			for (int n = 0; n < 1_000; n++) {
-				assertEquals("Expected head", Coin.HEAD, coins.get(i).toss());
+			for (int n = 0; n < 100_000; n++) {
+				assertEquals("Expected head only for coin " + coins.get(i), Coin.HEAD, coins.get(i).toss());
 			}
 		}
 	}
@@ -73,7 +66,8 @@ public class TestCoin {
 				//new CoinSecureRandom(),
 				new CoinRandom(),
 				//new CoinSplittableRandom(),
-				new CoinXoRoShiRo128PlusRandom());
+				new CoinXoRoShiRo128PlusRandom(),
+				new CoinNeumannENIACRandom());
 		boolean[] tosses = new boolean[500];
 		for (int c = 0; c < coins.size(); c++) {
 			Coin coin = coins.get(c);
@@ -91,11 +85,7 @@ public class TestCoin {
 
 	@Test
 	public void givenCoinTossThenDontExpectAnyLongSerieOfHeadsOrTails() {
-		List<Coin> coins = Arrays.asList(
-				new CoinSecureRandom(),
-				new CoinRandom(),
-				new CoinSplittableRandom(),
-				new CoinXoRoShiRo128PlusRandom());
+		List<Coin> coins = allCoins();
 		for (int c = 0; c < coins.size(); c++) {
 			Coin coin = coins.get(c);
 			boolean prevToss = false;
@@ -105,7 +95,7 @@ public class TestCoin {
 				if (i != 0 && toss == prevToss) {
 					seq++;
 					assertTrue("Got " + Coin.describe(toss) + " " + seq +
-							" times in a row using coin " + coin, seq < 18);
+							" times in a row using coin " + coin, seq < 19);
 				} else {
 					seq = 0;
 				}
@@ -115,11 +105,7 @@ public class TestCoin {
 	}
 
 	private long[] tossLotsOfFairCoins(long tossCount) {
-		List<Coin> coins = Arrays.asList(
-				new CoinSecureRandom(50.00f),
-				new CoinRandom(50.00f),
-				new CoinSplittableRandom(50.00f),
-				new CoinXoRoShiRo128PlusRandom(50.00f));
+		List<Coin> coins = allCoins(50.000f);
 		long sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0;
 		for (long i = 0; i < tossCount; i++) {
 			sum1 += coins.get(0).toss() == Coin.HEAD ? 1 : -1;
@@ -136,6 +122,19 @@ public class TestCoin {
 		assertFalse("Coin outside positive boundary", sum4 > tossCount);
 		assertFalse("Coin outside negative boundary", sum4 <= -tossCount);
 		return new long[] {sum1, sum2, sum3, sum4};
+	}
+
+	private List<Coin> allCoins() {
+		return allCoins(50.000f);
+	}
+
+	private List<Coin> allCoins(float probability) {
+		return Arrays.asList(
+				new CoinSecureRandom(probability),
+				new CoinRandom(probability),
+				new CoinSplittableRandom(probability),
+				new CoinXoRoShiRo128PlusRandom(probability),
+				new CoinNeumannENIACRandom(probability));
 	}
 
 }

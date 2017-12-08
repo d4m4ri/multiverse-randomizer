@@ -43,7 +43,7 @@ public abstract class Coin {
 		sb.append(new BigDecimal(100.00 - pHead).setScale(3, RoundingMode.HALF_UP));
 		sb.append("%; ");
 		if (getSeed() == null) {
-			sb.append("seed=na");
+			sb.append("seed=?");
 		} else {
 			sb.append("seed=");
 			sb.append(getSeed());
