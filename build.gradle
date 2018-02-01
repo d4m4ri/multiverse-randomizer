@@ -54,7 +54,7 @@ jar {
 	manifest {
 		attributes	'Implementation-Title': 'multiverse-randomizer',
 				'Implementation-Version': version,
-				'Main-Class': 'com.damari.randomwalk.app.mvrnd'
+				'Main-Class': 'com.damari.mvrnd.app.MultiverseRandomizer'
 	}
 }
 
