@@ -11,7 +11,7 @@ public class App {
 
 	public App() {
 		log.info("Multiverse Randomizer starting ...");
-		log.info("Found {} processors", Runtime.getRuntime().availableProcessors());
+		log.info("Found {} logical CPUs", Runtime.getRuntime().availableProcessors());
 		new Panel(1600, 700);
 	}
 

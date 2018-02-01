@@ -18,9 +18,9 @@ public class CoinThreadLocalRandom extends Coin {
 	@Override
 	public boolean toss() {
 		if (ThreadLocalRandom.current().nextFloat() < headProbability) {
-			return HEAD;
+			return head;
 		}
-		return TAIL;
+		return tail;
 	}
 
 	@Override

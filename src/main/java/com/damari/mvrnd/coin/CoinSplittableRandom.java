@@ -19,9 +19,9 @@ public class CoinSplittableRandom extends Coin {
 	@Override
 	public boolean toss() {
 		if (randomNum.nextDouble() < headProbability) {
-			return HEAD;
+			return head;
 		}
-		return TAIL;
+		return tail;
 	}
 
 	@Override

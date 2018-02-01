@@ -7,6 +7,8 @@ package com.damari.mvrnd.tests.coin;
 
 import static org.junit.Assert.assertTrue;
 
+import static com.damari.mvrnd.coin.Coin.head;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.math.BigDecimal;
@@ -70,10 +72,10 @@ public class TestThePeriod {
 				// Movement
 				boolean toss = coin.toss();
 				if (xAxis) {
-					x = (toss == Coin.HEAD) ? x + 1 : x - 1;
+					x = (toss == head) ? x + 1 : x - 1;
 					xAxis = false;
 				} else {
-					y = (toss == Coin.HEAD) ? y + 1 : y - 1;
+					y = (toss == head) ? y + 1 : y - 1;
 					xAxis = true;
 				}
 
@@ -98,7 +100,7 @@ public class TestThePeriod {
 			}
 
 			float matchPercent = 100f * pixelMatch / pixels;
-			assertTrue("Found unfair coin: " + coin + ", match percent " + matchPercent + "%", matchPercent >= 91.000f);
+			assertTrue("Found unfair coin: " + coin + ", match percent " + matchPercent + "%", matchPercent >= 90.000f);
 			String matchPercentStr = new BigDecimal(matchPercent).setScale(3, RoundingMode.HALF_UP).toString();
 			results.add("Matched: " + pixelMatch + "/" + pixels + " (~" + matchPercentStr + "%) - took " + timer.getMinutesAndSeconds());
 

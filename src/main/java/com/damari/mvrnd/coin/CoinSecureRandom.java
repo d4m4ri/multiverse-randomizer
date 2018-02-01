@@ -28,9 +28,9 @@ public class CoinSecureRandom extends Coin {
 	@Override
 	public boolean toss() {
 		if (randomNum.nextFloat() < headProbability) {
-			return HEAD;
+			return head;
 		}
-		return TAIL;
+		return tail;
 	}
 
 	@Override

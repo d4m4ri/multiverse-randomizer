@@ -23,7 +23,7 @@ public class TestTrade {
 
 	private static final Logger log = LoggerFactory.getLogger(TestTrade.class.getName());
 
-	public static Statistics usingThreads(Class<?> algo, Config config, int iters, Coin coin, int deposit,
+	public static Statistics usingThreads(Class<?> algoClazz, Config config, int iters, Coin coin, int deposit,
 			float commission, float goalPercent, float riskPercent, long time, int price, int tradeSize,
 			int spread, long timeStepMs, int stockDataSizeReq) throws Exception {
 
@@ -35,7 +35,7 @@ public class TestTrade {
 		MyThreadPoolExecutor executorService = new MyThreadPoolExecutor(threads, threads, 60);
 
 		log.info("------ SETUP ------");
-		log.info("   CPUs found: {}", cpus);
+		log.info(" Logical CPUs: {}", cpus);
 		log.info("Using threads: {}", threads);
 		log.info("   Iterations: {}", iters);
 		log.info("         Goal: {}%", goalPercent);
@@ -58,7 +58,7 @@ public class TestTrade {
 		int taskId = 0;
 		List<ExecutorJob> todo = new ArrayList<>(iters);
 		while (iters > 0) {
-			Executor algoStrategy = new Executor(taskId++, algo, config, stats, coin, risk, winClassification,
+			Executor algoStrategy = new Executor(taskId++, algoClazz, config, stats, coin, risk, winClassification,
 					deposit, commission, time, price, tradeSize, spread, timeStepMs, stockDataSizeReq);
 			ExecutorJob algoJob = new ExecutorJob(algoStrategy);
 			todo.add(algoJob);

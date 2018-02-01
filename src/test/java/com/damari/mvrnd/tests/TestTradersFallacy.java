@@ -1,8 +1,10 @@
 package com.damari.mvrnd.tests;
 
+import static org.junit.Assert.assertTrue;
+
 import static com.damari.mvrnd.algorithm.Strategy.price;
 import static com.damari.mvrnd.algorithm.Strategy.round;
-import static org.junit.Assert.assertTrue;
+import static com.damari.mvrnd.coin.Coin.head;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -27,7 +29,7 @@ public class TestTradersFallacy {
 			int busTicket = winOrLoseAmount + price(30.00f);
 			long i = 0;
 			while (balance > busTicket) {
-				if (coin.toss() == Coin.HEAD) {
+				if (coin.toss() == head) {
 					balance -= winOrLoseAmount;
 				} else {
 					balance += winOrLoseAmount;

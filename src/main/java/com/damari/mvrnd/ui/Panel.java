@@ -29,18 +29,19 @@ import com.damari.mvrnd.data.DataGenerator;
 import com.damari.mvrnd.order.Broker;
 
 public class Panel extends JPanel {
+
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger LOG = LoggerFactory.getLogger(Panel.class.getName());
+	private static final Logger log = LoggerFactory.getLogger(Panel.class.getName());
 
-	private static final Font AXIS_FONT = new Font("Arial", Font.BOLD, 12);
-	private static final Color AXIS_COLOR = Color.BLACK;
+	private static final Font axisFont = new Font("Arial", Font.BOLD, 12);
+	private static final Color axisColor = Color.BLACK;
 
-	private static final Font LABEL_FONT = new Font("Arial", Font.BOLD, 16);
-	private static final Color LABEL_COLOR = Color.GRAY;
+	private static final Font labelFont = new Font("Arial", Font.BOLD, 16);
+	private static final Color labelColor = Color.GRAY;
 
-	private static final Font PRICE_DESC_FONT = new Font("Arial", Font.BOLD, 10);
-	private static final Color PRICE_DESC_COLOR = Color.BLUE;
+	private static final Font priceDescFont = new Font("Arial", Font.BOLD, 10);
+	private static final Color priceDescColor = Color.BLUE;
 
 	private int winW, winH;
 
@@ -167,16 +168,16 @@ public class Panel extends JPanel {
 //		}
 
 	private void drawLabels(Graphics g) {
-		g.setFont(LABEL_FONT);
-		g.setColor(LABEL_COLOR);
+		g.setFont(labelFont);
+		g.setColor(labelColor);
 		g.drawString("y is price", gridX2 - 60, gridY1 + 20);
 		g.drawString("x is time", gridX2 - 60, gridY1 + 40);
 		g.drawRect(gridX2 - 70, gridY1, 90, 50);
 	}
 
 	private void drawAxis(Graphics g) {
-		g.setFont(AXIS_FONT);
-		g.setColor(AXIS_COLOR);
+		g.setFont(axisFont);
+		g.setColor(axisColor);
 
 		g.drawLine(gridX1 - 20, gridY2, gridX2, gridY2); // X-axis
 		g.drawLine(gridX1, gridY1, gridX1, gridY2 + 20); // Y-axis

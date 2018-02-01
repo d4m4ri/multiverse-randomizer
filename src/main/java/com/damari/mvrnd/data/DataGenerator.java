@@ -4,6 +4,8 @@
  */
 package com.damari.mvrnd.data;
 
+import static com.damari.mvrnd.coin.Coin.head;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.damari.mvrnd.coin.Coin;
@@ -87,7 +89,7 @@ public class DataGenerator {
 		maxPrice = 0;
 		int i = 0;
 		for (; i < size; i++) {
-			if (coin.toss() == Coin.HEAD) {
+			if (coin.toss() == head) {
 				price += spread;
 				if (price > maxPrice) {
 					maxPrice = price;
@@ -116,19 +118,19 @@ public class DataGenerator {
 	}
 
 	/**
-	 * Apply data. Not thread safe! Uses bucket 0.
+	 * Apply data on first available bucket.
 	 * @param timeSerie long array.
 	 * @param priceSerie int array.
+	 * @return bucket used.
 	 */
-	public void apply(final long[] timeSerie, final int[] priceSerie) {
+	public int apply(final long[] timeSerie, final int[] priceSerie) {
 		lockBucket();
-
 		for (int i = 0; i < timeSerie.length; i++) {
 			bucketTimeSerie[curBucket][i] = timeSerie[i];
 			bucketPriceSerie[curBucket][i] = priceSerie[i];
 		}
-
 		unlockBucket();
+		return curBucket;
 	}
 
 	public long getTime(final int i) {

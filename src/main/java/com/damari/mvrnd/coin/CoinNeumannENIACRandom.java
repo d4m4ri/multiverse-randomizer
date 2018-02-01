@@ -60,7 +60,7 @@ public class CoinNeumannENIACRandom extends Coin {
 		// Toss
 		float rnd = seed % 1_00_000L; // 00 000   - 99 999
 		rnd /= 1_00_000f;             // 0.00000f - 0.99999f
-		return rnd < headProbability ? HEAD : TAIL;
+		return rnd < headProbability ? head : tail;
 	}
 
 	/**

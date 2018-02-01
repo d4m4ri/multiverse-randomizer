@@ -12,8 +12,12 @@ import java.math.RoundingMode;
 
 public abstract class Coin {
 
-	public final static boolean HEAD = true;
-	public final static boolean TAIL = false;
+	public final static boolean head = true;
+	public final static boolean tail = false;
+
+	public final static float fair = 50.00f;
+	public final static float headsOnly = 100.00f;
+	public final static float tailsOnly = 0.00f;
 
 	protected float headProbability;
 
@@ -28,7 +32,7 @@ public abstract class Coin {
 	protected abstract String getLabel();
 
 	public static String describe(boolean toss) {
-		return (Coin.HEAD ? "head" : "tail");
+		return (head ? "head" : "tail");
 	}
 
 	@Override
