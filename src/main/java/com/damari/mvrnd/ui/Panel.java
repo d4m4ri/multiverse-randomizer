@@ -93,10 +93,14 @@ public class Panel extends JPanel {
 
 		int colorRGB = 250;
 		float yArea = gridY2 - gridY1;
+
 		if (asset == null) {
 			asset = new DataGenerator();
 		}
+		int bucket = asset.lockBucket();
+
 		Broker broker = new Broker();
+
 		for (int stockIdx = 0; stockIdx < 100; stockIdx++) {
 			broker
 				.reset((int)(50_000.00f * 100f))
@@ -112,7 +116,7 @@ public class Panel extends JPanel {
 			int spread = (int)(0.10f * 100f);
 
 			long timeStep = 300;
-			int size = asset.generateRandomWalk(coin, iterations, time, startPrice, spread, timeStep);
+			int size = asset.generateRandomWalk(bucket, coin, iterations, time, startPrice, spread, timeStep);
 
 			float minPrice = (int)(asset.getMinPrice() / 100f);
 			float maxPrice = (int)(asset.getMaxPrice() / 100f);
@@ -135,6 +139,7 @@ public class Panel extends JPanel {
 			colorRGB = colorRGB >= colMin + colStep ? colorRGB - colStep : colMin;
 		}
 
+		asset.unlockBucket(bucket);
 	}
 
 	// Only process last stock
@@ -213,8 +218,12 @@ public class Panel extends JPanel {
 
 	public void run() {
 		coloredRectangles.clear();
-		asset.generateRandomWalk(new CoinSecureRandom(), 1000, new DateTime().getMillis(),
+
+		int bucket = asset.lockBucket();
+		asset.generateRandomWalk(bucket, new CoinSecureRandom(), 1000, new DateTime().getMillis(),
 				(int)(80.00f * 100f), (int)(0.10f * 100f), 345);
+		asset.unlockBucket(bucket);
+
 		repaint();
 	}
 

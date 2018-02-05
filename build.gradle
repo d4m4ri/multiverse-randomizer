@@ -75,8 +75,10 @@ artifacts {
 }
 
 test {
-	minHeapSize = "4096m"
-	maxHeapSize = "4096m"
+	minHeapSize = "2048m"
+	maxHeapSize = "8192m"
+	jvmArgs "-XX:+CMSClassUnloadingEnabled"
+	jvmArgs "-XX:+HeapDumpOnOutOfMemoryError"
 }
 
 checkstyle {

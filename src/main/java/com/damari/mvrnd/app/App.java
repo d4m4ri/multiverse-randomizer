@@ -11,8 +11,17 @@ public class App {
 
 	public App() {
 		log.info("Multiverse Randomizer starting ...");
-		log.info("Found {} logical CPUs", Runtime.getRuntime().availableProcessors());
+		log.info("Using {} threads", getPhysicalCores());
 		new Panel(1600, 700);
+	}
+
+	/**
+	 * Get physical cores assuming hyper-threading (HT) is enabled.
+	 * @return Number of physical cores.
+	 */
+	public static int getPhysicalCores() {
+		int cores = Runtime.getRuntime().availableProcessors();
+		return cores <= 1 ? 1 : Runtime.getRuntime().availableProcessors() / 2;
 	}
 
 }

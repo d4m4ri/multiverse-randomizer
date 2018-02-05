@@ -25,7 +25,7 @@ public class TestTrade {
 
 	public static Statistics usingThreads(Class<?> algoClazz, Config config, int iters, Coin coin, int deposit,
 			float commission, float goalPercent, float riskPercent, long time, int price, int tradeSize,
-			int spread, long timeStepMs, int stockDataSizeReq) throws Exception {
+			int spread, long timeStepMs, int dataSizeReq) throws Exception {
 
 		Timer totTime = new Timer();
 
@@ -59,7 +59,7 @@ public class TestTrade {
 		List<ExecutorJob> todo = new ArrayList<>(iters);
 		while (iters > 0) {
 			Executor algoStrategy = new Executor(taskId++, algoClazz, config, stats, coin, risk, winClassification,
-					deposit, commission, time, price, tradeSize, spread, timeStepMs, stockDataSizeReq);
+					deposit, commission, time, price, tradeSize, spread, timeStepMs, dataSizeReq);
 			ExecutorJob algoJob = new ExecutorJob(algoStrategy);
 			todo.add(algoJob);
 			iters--;
@@ -84,8 +84,8 @@ public class TestTrade {
 		if (!completedOk) executorService.shutdownNow();
 
 		totTime.stop();
-		log.info("Total time: {}sec)", totTime.getSecs());
-		log.info("Total time: {})", totTime.getMinutesAndSeconds());
+		log.info("Total time: {}sec", totTime.getSecs());
+		log.info("Total time: {}", totTime.getMinutesAndSeconds());
 
 		// Check results
 		iters = 0;

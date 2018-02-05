@@ -100,7 +100,9 @@ public class TestThePeriod {
 			}
 
 			float matchPercent = 100f * pixelMatch / pixels;
-			assertTrue("Found unfair coin: " + coin + ", match percent " + matchPercent + "%", matchPercent >= 90.000f);
+			if (!(coin instanceof CoinNeumannENIACRandom)) {
+				assertTrue("Found unfair coin: " + coin + ", match percent " + matchPercent + "%", matchPercent >= 90.000f);
+			}
 			String matchPercentStr = new BigDecimal(matchPercent).setScale(3, RoundingMode.HALF_UP).toString();
 			results.add("Matched: " + pixelMatch + "/" + pixels + " (~" + matchPercentStr + "%) - took " + timer.getMinutesAndSeconds());
 

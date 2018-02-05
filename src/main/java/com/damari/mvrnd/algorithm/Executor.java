@@ -70,7 +70,8 @@ public class Executor extends ExecutorAlgo {
 			.setCommissionPercent(commission);
 
 		timer.start();
-		int dataSizeGen = asset.generateRandomWalk(coin, dataSizeReq, time, price, spread, timeStepMs);
+		int bucket = asset.lockBucket();
+		int dataSizeGen = asset.generateRandomWalk(bucket, coin, dataSizeReq, time, price, spread, timeStepMs);
 		timer.stop();
 		long totTimeDataGenerate = stats.addTimeDataGenerate(timer.getMillis());
 		r.append("Data generation took ").append(timer).append(" for ").append(dataSizeGen).append(" price points\n");
@@ -85,6 +86,7 @@ public class Executor extends ExecutorAlgo {
 					config, broker, spread, tradeSize});
 		} catch (NoSuchMethodException | SecurityException | InstantiationException |
 				IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			asset.unlockBucket(bucket);
 			throw new RuntimeException("Failed to create algorithm");
 		}
 
@@ -99,6 +101,7 @@ public class Executor extends ExecutorAlgo {
 			} catch (NoCommissionException e) {
 				r.append("#").append(assetIdx).append(" Haven't specified commission costs\n");
 				log.info(r.toString());
+				asset.unlockBucket(bucket);
 				throw new RuntimeException("Haven't specified commission costs");
 			}
 
@@ -146,20 +149,23 @@ public class Executor extends ExecutorAlgo {
 
 		if (broker.getOrders().size() == 0) {
 			log.warn("Expected some orders");
+			asset.unlockBucket(bucket);
 			throw new RuntimeException("Expected some orders");
 		}
 
 		if (assetIdx == dataSizeReq) {
 			log.warn("Ran out of asset data to test at {}, please increase sample size", assetIdx);
+			asset.unlockBucket(bucket);
 			throw new RuntimeException("Ran out of asset data to test at " + assetIdx + ", please increase sample size");
 		}
 
+		asset.unlockBucket(bucket);
 		return true;
 	}
 
-    @Override
-    public String toString() {
-    	return "Pension fund strategy";
-    }
+	@Override
+	public String toString() {
+		return "Executor";
+	}
 
 }

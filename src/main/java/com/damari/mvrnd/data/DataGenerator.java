@@ -8,21 +8,21 @@ import static com.damari.mvrnd.coin.Coin.head;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.damari.mvrnd.app.App;
 import com.damari.mvrnd.coin.Coin;
 
 public class DataGenerator {
 
 	private static final Object lock = new Object();
 
-	private static int MAX_BUCKETS = 4; // has to be equal/or greater than number of threads
-	private static int MAX_DATA = 60_000_000; // has to be equal/or greater than number of requests data points
+	public static final int maxBuckets = App.getPhysicalCores();
+	private static int maxData = 60_000_000; // has to be equal/or greater than number of requests data points
 
 	private static long[][] bucketTimeSerie;
 	private static int[][] bucketPriceSerie;
 	private static AtomicBoolean[] bucketUsed;
 
 	private static int buckets = -1;
-	private int curBucket;
 
 	/** Used as cache for performance */
 	private int minPrice;
@@ -34,10 +34,10 @@ public class DataGenerator {
 		// Init data once
 		synchronized (lock) {
 			if (buckets == -1) {
-				buckets = MAX_BUCKETS;
-				System.err.println("INITIALIZING DATA SERIES MEMORY");
-				bucketTimeSerie = new long[buckets][MAX_DATA];
-				bucketPriceSerie = new int[buckets][MAX_DATA];
+				buckets = maxBuckets;
+				System.err.println("INITIALIZING DATA SERIES MEMORY (" + memUsage() + "M / " + maxBuckets + "T)");
+				bucketTimeSerie = new long[buckets][maxData];
+				bucketPriceSerie = new int[buckets][maxData];
 				bucketUsed = new AtomicBoolean[buckets];
 				for (int i = 0; i < buckets; i++) {
 					bucketUsed[i] = new AtomicBoolean(false);
@@ -47,18 +47,14 @@ public class DataGenerator {
 	}
 
 	/**
-	 * Lock bucket.
-	 * @param size Requested data size.
+	 * Calculate memory usage based on time- and price series.
+	 * @return int with memory usage in MB.
 	 */
-	private void lockBucket() {
-		// Find available bucket and lock it
-		for (int i = 0; i < buckets; i++) {
-			if (bucketUsed[i].compareAndSet(false, true)) {
-				curBucket = i;
-				return;
-			}
-		}
-		throw new RuntimeException("Couldn't find free bucket. Make sure threads don't exceed number of buckets");
+	public int memUsage() {
+		float muTimeSerieB = buckets * maxData * (Long.SIZE / 8f);
+		float muPriceSerieB = buckets * maxData * (Integer.SIZE / 8f);
+		float sum = (muTimeSerieB + muPriceSerieB) / 1000f / 1000f;
+		return (int) sum;
 	}
 
 	/**
@@ -72,6 +68,7 @@ public class DataGenerator {
 	 * a non mean reverting process that can move away from the mean either in a positive or negative
 	 * direction. Another characteristic of a random walk is that the variance evolves over time and
 	 * goes to infinity as time goes to infinity; therefore, a random walk cannot be predicted."
+	 * @param bucket Which bucket to put generated data.
 	 * @param coin Coin to use for randomization.
 	 * @param size Number of price points to generate.
 	 * @param time Time inception.
@@ -80,9 +77,8 @@ public class DataGenerator {
 	 * @param timeStep Time step in ms.
 	 * @return Size of data actually generated.
 	 */
-	public int generateRandomWalk(final Coin coin, final int size, long time, int price, final int spread,
-			final long timeStep) {
-		lockBucket();
+	public int generateRandomWalk(int bucket, final Coin coin, final int size, long time, int price,
+			final int spread, final long timeStep) {
 		startTime = time;
 
 		minPrice = Integer.MAX_VALUE;
@@ -103,34 +99,47 @@ public class DataGenerator {
 					}
 				}
 			}
-			bucketTimeSerie[curBucket][i] = time;
-			bucketPriceSerie[curBucket][i] = price;
+			bucketTimeSerie[bucket][i] = time;
+			bucketPriceSerie[bucket][i] = price;
 			time += timeStep;
 		}
 
 		stopTime = time - timeStep;
-		unlockBucket();
 		return i;
 	}
 
-	private void unlockBucket() {
-		bucketUsed[curBucket].set(false);
+	/**
+	 * Find available bucket and lock it.
+	 * @return int with bucket to use.
+	 */
+	public int lockBucket() {
+		for (int bucket = 0; bucket < buckets; bucket++) {
+			if (bucketUsed[bucket].compareAndSet(false, true)) {
+				return bucket;
+			}
+		}
+		throw new RuntimeException("Couldn't find free bucket. Make sure threads don't exceeds the number of buckets");
 	}
 
 	/**
-	 * Apply data on first available bucket.
+	 * Unlock a specific bucket.
+	 * @param bucket Which bucket to unlock.
+	 */
+	public void unlockBucket(int bucket) {
+		bucketUsed[bucket].set(false);
+	}
+
+	/**
+	 * Apply custom time- and price series.
+	 * @param bucket to use.
 	 * @param timeSerie long array.
 	 * @param priceSerie int array.
-	 * @return bucket used.
 	 */
-	public int apply(final long[] timeSerie, final int[] priceSerie) {
-		lockBucket();
+	public void apply(int bucket, final long[] timeSerie, final int[] priceSerie) {
 		for (int i = 0; i < timeSerie.length; i++) {
-			bucketTimeSerie[curBucket][i] = timeSerie[i];
-			bucketPriceSerie[curBucket][i] = priceSerie[i];
+			bucketTimeSerie[bucket][i] = timeSerie[i];
+			bucketPriceSerie[bucket][i] = priceSerie[i];
 		}
-		unlockBucket();
-		return curBucket;
 	}
 
 	public long getTime(final int i) {

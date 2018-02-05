@@ -11,9 +11,9 @@ public class Broker {
 
 	private static final Logger log = LoggerFactory.getLogger(Broker.class.getName());
 
-	private static final boolean DEBUG = false;
+	private static final boolean debug = false;
 
-	private static final int UNDEFINED = -1;
+	private static final int undefined = -1;
 
 	private Orders orders;
 
@@ -32,8 +32,8 @@ public class Broker {
 	public Broker(int balance) {
 		this.orders = new Orders();
 		this.balance = balance;
-		this.commissionFixed = UNDEFINED;
-		this.commissionPercent = UNDEFINED;
+		this.commissionFixed = undefined;
+		this.commissionPercent = undefined;
 		this.commissionSum = 0;
 		this.lossSum = 0;
 	}
@@ -41,8 +41,8 @@ public class Broker {
 	public Broker reset(int balance) {
 		this.orders.clear();
 		this.balance = balance;
-		this.commissionFixed = UNDEFINED;
-		this.commissionPercent = UNDEFINED;
+		this.commissionFixed = undefined;
+		this.commissionPercent = undefined;
 		this.commissionSum = 0;
 		this.lossSum = 0;
 		return this;
@@ -55,7 +55,7 @@ public class Broker {
 
 	public Broker setCommissionFixed(int commissionFixed) {
 		this.commissionFixed = commissionFixed;
-		this.commissionPercent = UNDEFINED;
+		this.commissionPercent = undefined;
 		return this;
 	}
 
@@ -66,12 +66,12 @@ public class Broker {
 	 */
 	public Broker setCommissionPercent(float commissionPercent) {
 		this.commissionPercent = commissionPercent;
-		this.commissionFixed = UNDEFINED;
+		this.commissionFixed = undefined;
 		return this;
 	}
 
 	private int calculateCommission(int price, int spread, int size) {
-		if (commissionFixed != UNDEFINED) {
+		if (commissionFixed != undefined) {
 			return commissionFixed;
 		} else {
 			return (int)((price + spread) * size * commissionPercent);
@@ -84,7 +84,7 @@ public class Broker {
 
 		int askPrice = price + spread;
 		orders.add(new Order(time, askPrice));
-		if (DEBUG) log.info("Buy @ {}", round(askPrice));
+		if (debug) log.info("Buy @ {}", round(askPrice));
 
 		long commission = calculateCommission(price, spread, size);
 		balance -= commission;
@@ -100,7 +100,7 @@ public class Broker {
 
 		int bidPrice = price - spread;
 		orders.add(new Order(time, bidPrice));
-		if (DEBUG) log.info("Sell @ {}", round(bidPrice));
+		if (debug) log.info("Sell @ {}", round(bidPrice));
 
 		int commission = calculateCommission(price, spread, size);
 		balance -= commission;
@@ -113,7 +113,7 @@ public class Broker {
 	}
 
 	private void checkCommissionDefined() throws NoCommissionException {
-		if (commissionFixed == UNDEFINED && commissionPercent == UNDEFINED) {
+		if (commissionFixed == undefined && commissionPercent == undefined) {
 			throw new NoCommissionException("Neither fixed or percent commissions defined.");
 		}
 	}

@@ -38,10 +38,12 @@ public class TestDataGeneration {
 			int stockDataSizeReq = 4_000;
 
 			DataGenerator stock = new DataGenerator();
-			int stockDataSizeGen = stock.generateRandomWalk(coin, stockDataSizeReq, time, price,
+			int bucket = stock.lockBucket();
+			int stockDataSizeGen = stock.generateRandomWalk(bucket, coin, stockDataSizeReq, time, price,
 					priceStep, timeStep);
 
 			assertEquals("Stock data size should be equal to requested size", stockDataSizeReq, stockDataSizeGen);
+			stock.unlockBucket(bucket);
 		}
 	}
 
@@ -55,39 +57,47 @@ public class TestDataGeneration {
 			int stockDataSizeReq = 5_000;
 
 			DataGenerator stock = new DataGenerator();
-			int stockDataSizeGen = stock.generateRandomWalk(coin, stockDataSizeReq, time, price, priceStep, timeStep);
+			int bucket = stock.lockBucket();
+			int stockDataSizeGen = stock.generateRandomWalk(bucket, coin, stockDataSizeReq, time, price, priceStep, timeStep);
 
 			assertNotEquals("Stock data size shouldn't be equal to requested size considering coin tail probability is 100%",
 					stockDataSizeReq, stockDataSizeGen);
+			stock.unlockBucket(bucket);
 		}
 	}
 
 	@Test
-	public void givenGenerateDataTwiceForEachCoinThenExpectFirstGenerationToBeOverwritten() throws Exception {
+	public void givenGenerateDataTwiceForEachBucketForEachCoinThenExpectFirstGenerationToBeOverwritten() throws Exception {
 		for (Coin coin : allCoins(fair)) {
-			// Generate random time and price data series
-			long time = dateTimeFormatter.parseDateTime("2018-01-18T09:00:00.000+0100").getMillis();
-			int price = price(50.00f);
-			int priceStep = price(0.05f);
-			long timeStep = 300;
-			int dataSizeReq = 3_000;
-			DataGenerator asset = new DataGenerator();
-			int dataSizeGen = asset.generateRandomWalk(coin, dataSizeReq, time, price, priceStep, timeStep);
-			assertEquals("Asset data size should be equal to requested size", dataSizeReq, dataSizeGen);
+			for (int buckets = 0; buckets < DataGenerator.maxBuckets; buckets++) {
+				// Generate random time and price data series
+				long time = dateTimeFormatter.parseDateTime("2018-01-18T09:00:00.000+0100").getMillis();
+				int price = price(50.00f);
+				int priceStep = price(0.05f);
+				long timeStep = 300;
+				int dataSizeReq = 3_000;
+				DataGenerator asset = new DataGenerator();
+				int bucket = asset.lockBucket();
 
-			// Generate zero data price data series
-			long[] timeSerie = new long[dataSizeReq];
-			int[] priceSerie = new int[dataSizeReq];
-			for (int i = 0; i < dataSizeReq; i++) {
-				timeSerie[i] = time;
-				priceSerie[i] = 0;
-				time += 1;
-			}
-			int bucket = asset.apply(timeSerie, priceSerie);
+				int dataSizeGen = asset.generateRandomWalk(bucket, coin, dataSizeReq, time, price, priceStep, timeStep);
+				assertEquals("Asset data size should be equal to requested size", dataSizeReq, dataSizeGen);
 
-			for (int i = 0; i < dataSizeReq; i++) {
-				price = asset.getPrice(bucket, i);
-				assertEquals("Asset price should be zero", 0, price);
+				// Generate zero data price data series
+				long[] timeSerie = new long[dataSizeReq];
+				int[] priceSerie = new int[dataSizeReq];
+				for (int i = 0; i < dataSizeReq; i++) {
+					timeSerie[i] = time;
+					priceSerie[i] = 0;
+					time += 1;
+				}
+				asset.apply(bucket, timeSerie, priceSerie);
+
+				for (int i = 0; i < dataSizeReq; i++) {
+					price = asset.getPrice(bucket, i);
+					assertEquals("Asset price should be zero", 0, price);
+				}
+
+				asset.unlockBucket(bucket);
 			}
 		}
 	}

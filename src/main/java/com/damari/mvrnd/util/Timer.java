@@ -32,6 +32,10 @@ public class Timer {
 		return (stop - start) / 1000L / 60L;
 	}
 
+	/**
+	 * Get minutes and seconds with description.
+	 * @return String with minutes and seconds %dm%ds.
+	 */
 	public String getMinutesAndSeconds() {
 		long ms = stop - start;
 		return String.format("%dm%ds", TimeUnit.MILLISECONDS.toMinutes(ms),
