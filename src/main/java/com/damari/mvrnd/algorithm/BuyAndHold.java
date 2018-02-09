@@ -10,7 +10,7 @@ import com.damari.mvrnd.order.NoCommissionException;
 
 public class BuyAndHold extends Strategy {
 
-	public static final int UNDEFINED = -1;
+	public static final int undefined = -1;
 
 	private int position;
 
@@ -20,7 +20,7 @@ public class BuyAndHold extends Strategy {
 		super(broker, spread);
 		this.size = size;
 
-		this.position = UNDEFINED;
+		this.position = undefined;
 	}
 
 	@Override
@@ -30,7 +30,7 @@ public class BuyAndHold extends Strategy {
 	}
 
 	private void trade(long time, int price) throws NoCommissionException, OutOfMoneyException {
-		if (position == UNDEFINED) {
+		if (position == undefined) {
 			position = price + spread;
 			broker.buy(time, price, spread, size);
 		}

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.damari.mvrnd.algorithm.Config;
 import com.damari.mvrnd.algorithm.Executor;
 import com.damari.mvrnd.algorithm.ExecutorJob;
+import com.damari.mvrnd.app.App;
 import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.data.Statistics;
 import com.damari.mvrnd.data.MyThreadPoolExecutor;
@@ -24,18 +25,30 @@ public class TestTrade {
 	private static final Logger log = LoggerFactory.getLogger(TestTrade.class.getName());
 
 	public static Statistics usingThreads(Class<?> algoClazz, Config config, int iters, Coin coin, int deposit,
-			float commission, float goalPercent, float riskPercent, long time, int price, int tradeSize,
+			float commission, float goalPercent, float riskPercent, long startTime, int price, int tradeSize,
 			int spread, long timeStepMs, int dataSizeReq) throws Exception {
 
-		Timer totTime = new Timer();
+		Timer time = new Timer();
+		time.start();
+		MyThreadPoolExecutor executorService = setupThreadPool(config, coin, iters, goalPercent, riskPercent, tradeSize, spread);
+		Statistics stats = new Statistics();
+		List<ExecutorJob> todos = createJobs(stats, algoClazz, config, coin, iters, deposit, goalPercent, riskPercent,
+				tradeSize, commission, startTime, price, spread, timeStepMs, dataSizeReq);
+		List<Future<ExecutorJob>> jobs = submitJobs(executorService, todos);
+		shutdown(executorService);
+		awaitTermination(executorService);
+		time.stop();
+		log.info("Total time: {}", time.getMinutesAndSeconds());
 
-		// Setup thread pool
-		int cpus = Runtime.getRuntime().availableProcessors();
-		int threads = cpus >= 2 ? cpus / 2 : cpus; // actual cores tends to be this
-		MyThreadPoolExecutor executorService = new MyThreadPoolExecutor(threads, threads, 60);
+		report(jobs);
 
+		return stats;
+	}
+
+	private static MyThreadPoolExecutor setupThreadPool(Config config, Coin coin, int iters,
+			float goalPercent, float riskPercent, int tradeSize, int spread) {
+		int threads = App.getPhysicalCores();
 		log.info("------ SETUP ------");
-		log.info(" Logical CPUs: {}", cpus);
 		log.info("Using threads: {}", threads);
 		log.info("   Iterations: {}", iters);
 		log.info("         Goal: {}%", goalPercent);
@@ -49,12 +62,15 @@ public class TestTrade {
 		if (config.containsKey("positionDistance")) {
 			log.info(" Pos.distance: {}", round(config.getInt("positionDistance")));
 		}
+		return new MyThreadPoolExecutor(threads, threads, 60);
+	}
 
-		// Create jobs
+	private static List<ExecutorJob> createJobs(Statistics stats, Class<?> algoClazz, Config config, Coin coin, int iters,
+			int deposit, float goalPercent, float riskPercent, int tradeSize, float commission, long time, int price,
+			int spread, long timeStepMs, int dataSizeReq) {
 		log.info("Creating jobs ...");
 		int risk = (int)((float)deposit * (100f - riskPercent) / 100f);
 		int winClassification = (int)((float)deposit * (1f + goalPercent / 100f));
-		Statistics stats = new Statistics();
 		int taskId = 0;
 		List<ExecutorJob> todo = new ArrayList<>(iters);
 		while (iters > 0) {
@@ -64,15 +80,21 @@ public class TestTrade {
 			todo.add(algoJob);
 			iters--;
 		}
+		return todo;
+	}
 
-		// Submit jobs
+	private static List<Future<ExecutorJob>> submitJobs(MyThreadPoolExecutor executorService, List<ExecutorJob> todos)
+			throws InterruptedException {
 		log.info("Submitting jobs ...");
-		List<Future<ExecutorJob>> results = executorService.invokeAll(todo);
+		return executorService.invokeAll(todos);
+	}
 
-		// Shutdown
+	private static void shutdown(MyThreadPoolExecutor executorService) {
 		log.info("Shutting down ...");
 		executorService.shutdown();
+	}
 
+	private static void awaitTermination(MyThreadPoolExecutor executorService) {
 		log.info("Waiting on work pool ...");
 		boolean completedOk = false;
 		try {
@@ -82,29 +104,24 @@ public class TestTrade {
 		}
 		log.info(completedOk ? "All threads were consumed OK." : "Some threads did not complete and was terminated.");
 		if (!completedOk) executorService.shutdownNow();
+	}
 
-		totTime.stop();
-		log.info("Total time: {}sec", totTime.getSecs());
-		log.info("Total time: {}", totTime.getMinutesAndSeconds());
-
-		// Check results
-		iters = 0;
+	private static void report(List<Future<ExecutorJob>> jobs) {
+		int i = 0;
 		StringBuilder sb = new StringBuilder(1024);
-		for (Future<ExecutorJob> aj : results) {
-			if (aj.isDone()) sb.append(" ").append(iters++);
+		for (Future<ExecutorJob> job : jobs) {
+			if (job.isDone()) sb.append(" ").append(i++);
 		}
-		log.info("Finished jobs:{}", (iters == 0 ? " N/A" : sb.toString()));
-		assertTrue("Expected at least some finished jobs, got " + iters + " finished jobs", iters > 0);
+		log.info("Finished jobs:{}", (i == 0 ? " N/A" : sb.toString()));
+		assertTrue("Expected at least some finished jobs, got " + i + " finished jobs", i > 0);
 
-		iters = 0;
+		i = 0;
 		sb.setLength(0);
-		for (Future<ExecutorJob> aj : results) {
-			if (aj.isCancelled()) sb.append(" ").append(iters++);
+		for (Future<ExecutorJob> job : jobs) {
+			if (job.isCancelled()) sb.append(" ").append(i++);
 		}
-		log.info("Cancelled jobs:{}", (iters == 0 ? " N/A" : sb.toString()));
-		assertTrue("Expected no cancelled jobs, got " + iters + " cancelled jobs", iters == 0);
-
-		return stats;
+		log.info("Cancelled jobs:{}", (i == 0 ? " N/A" : sb.toString()));
+		assertTrue("Expected no cancelled jobs, got " + i + " cancelled jobs", i == 0);
 	}
 
 }

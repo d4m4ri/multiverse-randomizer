@@ -61,16 +61,19 @@ public class Executor extends ExecutorAlgo {
 	@Override
 	public boolean process() {
 		stats.addJobStarted();
-		final StringBuilder r = new StringBuilder(1000);
-		r.append("------ TASK ").append(taskId).append(" ------\n");
 
 		Timer timer = new Timer();
+		timer.start();
+
 		DataGenerator asset = new DataGenerator();
+		int bucket = asset.lockBucket();
+
+		final StringBuilder r = new StringBuilder(1000);
+		r.append("------ TASK ").append(taskId).append(" (T").append(bucket).append(") ------\n");
+
 		Broker broker = new Broker(deposit)
 			.setCommissionPercent(commission);
 
-		timer.start();
-		int bucket = asset.lockBucket();
 		int dataSizeGen = asset.generateRandomWalk(bucket, coin, dataSizeReq, time, price, spread, timeStepMs);
 		timer.stop();
 		long totTimeDataGenerate = stats.addTimeDataGenerate(timer.getMillis());
@@ -126,13 +129,13 @@ public class Executor extends ExecutorAlgo {
 
 		r.append(algo.getSummary());
 		r.append("        Probability: ").append(BigDecimal.valueOf((float)wins / totJobs * 100f).setScale(2, BigDecimal.ROUND_HALF_UP)).append("%\n")
-		 .append(" Data pts requested: ").append(dataSizeReq).append("\n")
-		 .append(" Data pts generated: ").append(dataSizeGen).append("\n")
-		 .append("Asset min/max price: $").append(round(asset.getMinPrice())).append("/$").append(round(asset.getMaxPrice())).append("\n")
-		 .append(" Algo min/max price: $").append(round(algo.getMinPrice())).append("/$").append(round(algo.getMaxPrice())).append("\n")
+		 .append("Asset pts requested: ").append(dataSizeReq).append("\n")
+		 .append("Asset pts generated: ").append(dataSizeGen).append("\n")
 		 .append("   Asset start time: ").append(dateTimeFormatter.print(asset.getStartTime())).append("\n")
 		 .append("    Asset stop time: ").append(dateTimeFormatter.print(asset.getStopTime())).append("\n")
-		 .append("    Last algo price: $").append(round(algo.getLastPrice())).append("\n")
+		 .append("Asset min/max price: $").append(round(asset.getMinPrice())).append("/$").append(round(asset.getMaxPrice())).append("\n")
+		 .append(" Algo min/max price: $").append(round(algo.getMinPrice())).append("/$").append(round(algo.getMaxPrice())).append("\n")
+		 .append("    Algo last price: $").append(round(algo.getLastPrice())).append("\n")
 		 .append("      Broker orders: ").append(broker.getOrders().size()).append("\n")
 		 .append(" Broker commissions: $").append(round(broker.getCommissionSum())).append("\n")
 		 .append("  Losses (realised): $").append(round(broker.getLossSum())).append("\n")

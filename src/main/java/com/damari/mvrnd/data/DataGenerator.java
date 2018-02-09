@@ -123,7 +123,7 @@ public class DataGenerator {
 
 	/**
 	 * Unlock a specific bucket.
-	 * @param bucket Which bucket to unlock.
+	 * @param bucket to unlock.
 	 */
 	public void unlockBucket(int bucket) {
 		bucketUsed[bucket].set(false);

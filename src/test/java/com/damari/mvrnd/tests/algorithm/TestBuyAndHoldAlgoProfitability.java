@@ -22,7 +22,7 @@ public class TestBuyAndHoldAlgoProfitability {
 		float commission = 0.00069f;
 		float goalPercent = 8;
 		float riskPercent = 100;
-		long time = dateTimeFormatter.parseDateTime("2017-10-13T09:00:00.000+0100").getMillis();
+		long startTime = dateTimeFormatter.parseDateTime("2017-10-13T09:00:00.000+0100").getMillis();
 		int price = price(2762.00f);
 		int tradeSize = 600;
 		int spread = price(0.25f);
@@ -31,7 +31,7 @@ public class TestBuyAndHoldAlgoProfitability {
 		BuyAndHoldConfig config = new BuyAndHoldConfig();
 		Coin coin = new com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom(coinSkew);
 		Statistics stats = TestTrade.usingThreads(BuyAndHold.class, config, iters, coin, deposit,
-				commission, goalPercent, riskPercent, time, price, tradeSize, spread, timeStepMs, dataSize);
+				commission, goalPercent, riskPercent, startTime, price, tradeSize, spread, timeStepMs, dataSize);
 
 		assertTrue("Expected loss, got $" + stats.getWinLoss(), stats.getWinLoss() < 0);
 	}
