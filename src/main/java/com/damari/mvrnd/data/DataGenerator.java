@@ -16,7 +16,7 @@ public class DataGenerator {
 	private static final Object lock = new Object();
 
 	public static final int maxBuckets = App.getPhysicalCores();
-	private static int maxData = 60_000_000; // has to be equal/or greater than number of requests data points
+	private static int maxData = 60_000_000; // >= max requested data points in a thread
 
 	private static long[][] bucketTimeSerie;
 	private static int[][] bucketPriceSerie;

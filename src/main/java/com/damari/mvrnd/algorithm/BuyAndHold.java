@@ -16,7 +16,7 @@ public class BuyAndHold extends Strategy {
 
 	private int size;
 
-	public BuyAndHold(BuyAndHoldConfig config, Broker broker, int spread, int size) {
+	public BuyAndHold(Config config, Broker broker, int spread, int size) {
 		super(broker, spread);
 		this.size = size;
 		this.position = undefined;
