@@ -14,12 +14,12 @@ public class CoinNeumannENIACRandom extends Coin {
 
 	public CoinNeumannENIACRandom() {
 		headProbability = 50f / 100f;
-		setSeed(new SecureRandom().nextLong() / 10000L);
+		setSeed(new SecureRandom().nextLong() / 10_000L);
 	}
 
 	public CoinNeumannENIACRandom(float headProbability) {
 		this.headProbability = headProbability / 100f;
-		setSeed(new SecureRandom().nextLong() / 10000L);
+		setSeed(new SecureRandom().nextLong() / 10_000L);
 	}
 
 	@Override

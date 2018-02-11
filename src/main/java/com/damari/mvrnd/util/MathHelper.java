@@ -1,5 +1,5 @@
 package com.damari.mvrnd.util;
 
-public class Math {
+public class MathHelper {
 
 }

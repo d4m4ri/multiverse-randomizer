@@ -1,12 +1,14 @@
 package com.damari.mvrnd.tests;
 
-import static com.damari.mvrnd.algorithm.Strategy.round;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.base.Strings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import com.damari.mvrnd.app.App;
 import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.data.Statistics;
 import com.damari.mvrnd.data.MyThreadPoolExecutor;
+import com.damari.mvrnd.util.StringHelper;
 import com.damari.mvrnd.util.Timer;
 
 public class TestTrade {
@@ -56,11 +59,13 @@ public class TestTrade {
 		log.info("   Trade Size: {}", tradeSize);
 		log.info("         Coin: {}", coin);
 		log.info("       Spread: {}", spread);
-		if (config.containsKey("maxPositions")) {
-			log.info("Max Positions: {}", config.getInt("maxPositions"));
-		}
-		if (config.containsKey("positionDistance")) {
-			log.info(" Pos.distance: {}", round(config.getInt("positionDistance")));
+		Iterator<String> keys = config.getKeys();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			Object value = config.getProperty(key);
+			String keyDesc = StringHelper.crop(key, 13);
+			keyDesc = Strings.padStart(keyDesc, 13 - keyDesc.length(), " ".charAt(0));
+			log.info("{}: {}", keyDesc, value);
 		}
 		return new MyThreadPoolExecutor(threads, threads, 60);
 	}

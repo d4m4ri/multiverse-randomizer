@@ -1,6 +1,5 @@
 /*
- * If price > high then we go long, if it goes below we sell and don't rebuy until price
- * goes back above again.
+ * WIP: Momentum test. If price > high then buy. If price below last high, sell. Repeat.
  */
 package com.damari.mvrnd.algorithm;
 
@@ -10,7 +9,7 @@ import com.damari.mvrnd.order.NoCommissionException;
 
 public class Momentum extends Strategy {
 
-	public static final int UNDEFINED = -1;
+	public static final int undefined = -1;
 
 	private int position;
 
@@ -20,7 +19,7 @@ public class Momentum extends Strategy {
 		super(broker, spread);
 		this.size = size;
 
-		this.position = UNDEFINED;
+		this.position = undefined;
 	}
 
 	@Override
@@ -30,7 +29,7 @@ public class Momentum extends Strategy {
 	}
 
 	private void trade(long time, int price) throws NoCommissionException, OutOfMoneyException {
-		if (position == UNDEFINED) {
+		if (position == undefined) {
 			position = price + spread;
 			broker.buy(time, price, spread, size);
 		}
