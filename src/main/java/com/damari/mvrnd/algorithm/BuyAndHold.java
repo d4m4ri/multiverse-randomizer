@@ -1,6 +1,6 @@
 /*
  * Buy and hold is the best alternative if prices has a positive skew.
- * Good for testing against other algorithms.
+ * Used to test against other algorithms.
  */
 package com.damari.mvrnd.algorithm;
 
@@ -16,10 +16,9 @@ public class BuyAndHold extends Strategy {
 
 	private int size;
 
-	public BuyAndHold(Config config, Broker broker, int spread, int size) {
+	public BuyAndHold(BuyAndHoldConfig config, Broker broker, int spread, int size) {
 		super(broker, spread);
 		this.size = size;
-
 		this.position = undefined;
 	}
 

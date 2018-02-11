@@ -16,11 +16,11 @@ public abstract class Strategy {
 
 	private static final BigDecimal bigDecimal100 = BigDecimal.valueOf(100);
 
-	protected Broker broker;
+	protected final Broker broker;
 
 	protected int lastPrice;
 
-	protected int spread;
+	protected final int spread;
 
 	protected int minPrice;
 	protected int maxPrice;
@@ -85,7 +85,7 @@ public abstract class Strategy {
 	 * @param price as float.
 	 * @return price as int.
 	 */
-	public static int price(float price) {
+	public static int price(final float price) {
 		return (int) (price * 100f);
 	}
 
