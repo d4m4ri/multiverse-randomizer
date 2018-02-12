@@ -5,15 +5,18 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'checkstyle'
 
-sourceCompatibility = 1.9
-targetCompatibility = 1.9
+allprojects {
+    sourceCompatibility = 9
+    targetCompatibility = 9
+}
+
 version = '0.1'
 
 repositories {
-	mavenCentral()
-	maven { url "http://repo.maven.apache.org/maven2" }
-	maven { url "http://lambdaj.googlecode.com/svn/rep..." }
-	mavenLocal()
+        mavenCentral()
+        maven { url "http://repo.maven.apache.org/maven2" }
+        maven { url "http://jcenter.bintray.com/" } // has package: com.twmacinta:fast-md5:2.7.1
+        mavenLocal()
 }
 
 dependencies {
@@ -30,7 +33,8 @@ dependencies {
 		'org.slf4j:slf4j-api:1.7.7',
 		'org.slf4j:slf4j-log4j12:1.7.7',
 		'it.unimi.dsi:dsiutils:2.3.3',
-		'com.github.spotbugs:spotbugs-annotations:3.1.1'
+		'com.github.spotbugs:spotbugs-annotations:3.1.1',
+		'com.twmacinta:fast-md5:2.7.1'
 
 	// Runtime
 	runtime fileTree(dir: 'libs', include: '*.jar')
