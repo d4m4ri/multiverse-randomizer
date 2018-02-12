@@ -1,8 +1,10 @@
 #!/bin/sh
 
-gradle cleanEclipse
-gradle clean
+./gradlew wrapper --gradle-version 4.3-rc-2 --distribution-type all
 
-gradle eclipse
+./gradlew cleanEclipse
+./gradlew clean
 
-gradle build -x test
+./gradlew eclipse
+
+./gradlew build -x test

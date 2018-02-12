@@ -1,2 +1,2 @@
 #!/bin/sh
-gradle -i test
+./gradlew -i test
