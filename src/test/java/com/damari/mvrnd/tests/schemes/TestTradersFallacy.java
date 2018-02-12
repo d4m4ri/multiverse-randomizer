@@ -1,4 +1,4 @@
-package com.damari.mvrnd.tests;
+package com.damari.mvrnd.tests.schemes;
 
 import static org.junit.Assert.assertTrue;
 

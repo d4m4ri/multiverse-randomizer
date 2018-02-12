@@ -64,7 +64,7 @@ public class TestTrade {
 			String key = keys.next();
 			Object value = config.getProperty(key);
 			String keyDesc = StringHelper.crop(key, 13);
-			keyDesc = Strings.padStart(keyDesc, 13 - keyDesc.length(), " ".charAt(0));
+			keyDesc = Strings.padStart(keyDesc, 13 - keyDesc.length(), ' ');
 			log.info("{}: {}", keyDesc, value);
 		}
 		return new MyThreadPoolExecutor(threads, threads, 60);

@@ -38,6 +38,13 @@ dependencies {
 
 	// Runtime
 	runtime fileTree(dir: 'libs', include: '*.jar')
+
+	// JUnit
+	testCompile("junit:junit:4.12")
+	testRuntime("org.junit.vintage:junit-vintage-engine:4.12.3")
+	testCompile("org.junit.jupiter:junit-jupiter-api:5.0.3")
+	testRuntime("org.junit.jupiter:junit-jupiter-engine:5.0.3")
+	testCompile("org.junit.platform:junit-platform-runner:1.0.3")
 }
 
 eclipse {
