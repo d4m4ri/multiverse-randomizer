@@ -8,9 +8,9 @@ import org.joda.time.format.DateTimeFormatter;
 
 import com.damari.mvrnd.data.OutOfMoneyException;
 import com.damari.mvrnd.order.Broker;
-import com.damari.mvrnd.order.NoCommissionException;
+import com.damari.mvrnd.order.CommissionUndefinedException;
 
-public abstract class Strategy {
+public abstract class Algorithm {
 
 	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
 
@@ -25,7 +25,7 @@ public abstract class Strategy {
 	protected int minPrice;
 	protected int maxPrice;
 
-	public Strategy(final Broker broker, final int spread) {
+	public Algorithm(final Broker broker, final int spread) {
 		this.broker = broker;
 		this.spread = spread;
 
@@ -55,10 +55,10 @@ public abstract class Strategy {
 	 * Process time and price.
 	 * @param time as long.
 	 * @param price as int.
-	 * @throws NoCommissionException if broker misconfiguration.
+	 * @throws CommissionUndefinedException if broker misconfiguration.
 	 * @throws OutOfMoneyException if money ran out.
 	 */
-	public void process(final long time, final int price) throws NoCommissionException, OutOfMoneyException {
+	public void process(final long time, final int price) throws CommissionUndefinedException, OutOfMoneyException {
 		lastPrice = price;
 		updateMinMax(price);
 	}

@@ -1,6 +1,6 @@
 package com.damari.mvrnd.order;
 
-import static com.damari.mvrnd.algorithm.Strategy.round;
+import static com.damari.mvrnd.algorithm.Algorithm.round;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +79,7 @@ public class Broker {
 	}
 
 	public void buy(long time, int price, int spread, int size)
-			throws NoCommissionException, OutOfMoneyException {
+			throws CommissionUndefinedException, OutOfMoneyException {
 		checkCommissionDefined();
 
 		int askPrice = price + spread;
@@ -95,7 +95,7 @@ public class Broker {
 	}
 
 	public void sell(long time, int price, int spread, int size)
-			throws NoCommissionException, OutOfMoneyException {
+			throws CommissionUndefinedException, OutOfMoneyException {
 		checkCommissionDefined();
 
 		int bidPrice = price - spread;
@@ -112,9 +112,9 @@ public class Broker {
 
 	}
 
-	private void checkCommissionDefined() throws NoCommissionException {
+	private void checkCommissionDefined() throws CommissionUndefinedException {
 		if (commissionFixed == undefined && commissionPercent == undefined) {
-			throw new NoCommissionException("Neither fixed or percent commissions defined.");
+			throw new CommissionUndefinedException("Neither fixed or percent commissions defined.");
 		}
 	}
 

@@ -56,4 +56,9 @@ public class CoinSecureRandom extends Coin {
 		return "SecureRandom";
 	}
 
+	@Override
+	public boolean isCPU() {
+		return true;
+	}
+
 }

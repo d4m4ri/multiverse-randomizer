@@ -1,7 +1,7 @@
 package com.damari.mvrnd.algorithm;
 
-import static com.damari.mvrnd.algorithm.Strategy.dateTimeFormatter;
-import static com.damari.mvrnd.algorithm.Strategy.round;
+import static com.damari.mvrnd.algorithm.Algorithm.dateTimeFormatter;
+import static com.damari.mvrnd.algorithm.Algorithm.round;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -15,7 +15,7 @@ import com.damari.mvrnd.data.DataGenerator;
 import com.damari.mvrnd.data.OutOfMoneyException;
 import com.damari.mvrnd.data.Statistics;
 import com.damari.mvrnd.order.Broker;
-import com.damari.mvrnd.order.NoCommissionException;
+import com.damari.mvrnd.order.CommissionUndefinedException;
 import com.damari.mvrnd.util.Timer;
 
 public class Executor extends ExecutorAlgo {
@@ -66,30 +66,30 @@ public class Executor extends ExecutorAlgo {
 		timer.start();
 
 		DataGenerator asset = new DataGenerator();
-		int bucket = asset.lockBucket();
+		int datasetId = asset.lock();
 
 		final StringBuilder r = new StringBuilder(1000);
-		r.append("------ TASK ").append(taskId).append(" (T").append(bucket).append(") ------\n");
+		r.append("------ TASK ").append(taskId).append(" (T").append(datasetId).append(") ------\n");
 
 		Broker broker = new Broker(deposit)
 			.setCommissionPercent(commission);
 
-		int dataSizeGen = asset.generateRandomWalk(bucket, coin, dataSizeReq, time, price, spread, timeStepMs);
+		int dataSizeGen = asset.generate(datasetId, coin, dataSizeReq, time, price, spread, timeStepMs);
 		timer.stop();
 		long totTimeDataGenerate = stats.addTimeDataGenerate(timer.getMillis());
 		r.append("Data generation took ").append(timer).append(" for ").append(dataSizeGen).append(" price points\n");
 
 		timer.start();
-		Strategy algo = null;
+		Algorithm algo = null;
 		Constructor<?> constructor;
 		try {
 			constructor = algoClazz.getConstructor(new Class[] {
 					Config.class, Broker.class, int.class, int.class});
-			algo = (Strategy) constructor.newInstance(new Object[] {
+			algo = (Algorithm) constructor.newInstance(new Object[] {
 					config, broker, spread, tradeSize});
 		} catch (NoSuchMethodException | SecurityException | InstantiationException |
 				IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			asset.unlockBucket(bucket);
+			asset.unlock(datasetId);
 			throw new RuntimeException("Failed to create algorithm");
 		}
 
@@ -101,10 +101,10 @@ public class Executor extends ExecutorAlgo {
 			} catch (OutOfMoneyException e) {
 				r.append("#").append(assetIdx).append(" Ran out of money\n");
 				break;
-			} catch (NoCommissionException e) {
+			} catch (CommissionUndefinedException e) {
 				r.append("#").append(assetIdx).append(" Haven't specified commission costs\n");
 				log.info(r.toString());
-				asset.unlockBucket(bucket);
+				asset.unlock(datasetId);
 				throw new RuntimeException("Haven't specified commission costs");
 			}
 
@@ -152,17 +152,17 @@ public class Executor extends ExecutorAlgo {
 
 		if (broker.getOrders().size() == 0) {
 			log.warn("Expected some orders");
-			asset.unlockBucket(bucket);
+			asset.unlock(datasetId);
 			throw new RuntimeException("Expected some orders");
 		}
 
 		if (assetIdx == dataSizeReq) {
 			log.warn("Ran out of asset data to test at {}, please increase sample size", assetIdx);
-			asset.unlockBucket(bucket);
+			asset.unlock(datasetId);
 			throw new RuntimeException("Ran out of asset data to test at " + assetIdx + ", please increase sample size");
 		}
 
-		asset.unlockBucket(bucket);
+		asset.unlock(datasetId);
 		return true;
 	}
 

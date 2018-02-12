@@ -30,7 +30,7 @@ import com.damari.mvrnd.util.Timer;
 public class TestThePeriod {
 
 	@Test
-	public void testThePeriodCoverageForEachFairCoinUsingRandomWalkVisualized() throws InterruptedException {
+	public void givenEachCoinsRandomWalkVisualizedThenExpectFairDistribution() throws InterruptedException {
 		int width = 1920;
 		int height = 1080;
 		int pixels = width * height;

@@ -3,8 +3,8 @@ package com.damari.mvrnd.tests.algorithm;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import static com.damari.mvrnd.algorithm.Strategy.price;
-import static com.damari.mvrnd.algorithm.Strategy.dateTimeFormatter;
+import static com.damari.mvrnd.algorithm.Algorithm.price;
+import static com.damari.mvrnd.algorithm.Algorithm.dateTimeFormatter;
 
 import org.junit.Test;
 
@@ -19,7 +19,7 @@ import com.damari.mvrnd.tests.TestTrade;
 public class TestBuyAndHoldAlgo {
 
 	@Test
-	public void givenDoublingOfAssetThenExpectProfit() throws Exception {
+	public void givenAssetDoublingInPriceThenExpectProfitUsingBuyAndHoldAlgo() throws Exception {
 		int deposit = price(10_000.00f);
 		float commission = 0.00069f;
 		float initialPrice = 100.00f;
@@ -30,7 +30,7 @@ public class TestBuyAndHoldAlgo {
 		broker.deposit(deposit).setCommissionPercent(commission);
 
 		DataGenerator asset = new DataGenerator();
-		int bucket = asset.lockBucket();
+		int datasetId = asset.lock();
 		long time = dateTimeFormatter.parseDateTime("2016-11-18T09:00:00.000+0100").getMillis();
 
 		// Render doubling of price
@@ -42,7 +42,7 @@ public class TestBuyAndHoldAlgo {
 			time += 60_000;
 			price += spread;
 		}
-		asset.apply(bucket, timeSerie, priceSerie);
+		asset.apply(datasetId, timeSerie, priceSerie);
 
 		// Run algo
 		BuyAndHoldConfig config = new BuyAndHoldConfig();
@@ -55,7 +55,7 @@ public class TestBuyAndHoldAlgo {
 		assertEquals("Unexpected balance", price(9996.55f), broker.getBalance());
 		assertEquals("Unexpected NAV", price(4995.00f), algo.getNAV());
 
-		asset.unlockBucket(bucket);
+		asset.unlock(datasetId);
 	}
 
 	@Test

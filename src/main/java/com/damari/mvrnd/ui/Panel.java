@@ -1,6 +1,6 @@
 package com.damari.mvrnd.ui;
 
-import static com.damari.mvrnd.algorithm.Strategy.round;
+import static com.damari.mvrnd.algorithm.Algorithm.round;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -97,7 +97,7 @@ public class Panel extends JPanel {
 		if (asset == null) {
 			asset = new DataGenerator();
 		}
-		int bucket = asset.lockBucket();
+		int datasetId = asset.lock();
 
 		Broker broker = new Broker();
 
@@ -116,7 +116,7 @@ public class Panel extends JPanel {
 			int spread = (int)(0.10f * 100f);
 
 			long timeStep = 300;
-			int size = asset.generateRandomWalk(bucket, coin, iterations, time, startPrice, spread, timeStep);
+			int size = asset.generate(datasetId, coin, iterations, time, startPrice, spread, timeStep);
 
 			float minPrice = (int)(asset.getMinPrice() / 100f);
 			float maxPrice = (int)(asset.getMaxPrice() / 100f);
@@ -139,7 +139,7 @@ public class Panel extends JPanel {
 			colorRGB = colorRGB >= colMin + colStep ? colorRGB - colStep : colMin;
 		}
 
-		asset.unlockBucket(bucket);
+		asset.unlock(datasetId);
 	}
 
 	// Only process last stock
@@ -219,10 +219,10 @@ public class Panel extends JPanel {
 	public void run() {
 		coloredRectangles.clear();
 
-		int bucket = asset.lockBucket();
-		asset.generateRandomWalk(bucket, new CoinSecureRandom(), 1000, new DateTime().getMillis(),
+		int datasetId = asset.lock();
+		asset.generate(datasetId, new CoinSecureRandom(), 1000, new DateTime().getMillis(),
 				(int)(80.00f * 100f), (int)(0.10f * 100f), 345);
-		asset.unlockBucket(bucket);
+		asset.unlock(datasetId);
 
 		repaint();
 	}

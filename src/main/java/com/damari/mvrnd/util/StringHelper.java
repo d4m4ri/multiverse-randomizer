@@ -35,7 +35,7 @@ public class StringHelper {
 			return c1 + (c1.length() == s1.length() ? " " : ".") + s2;
 		}
 
-		// Crop both string symmetrically'ish
+		// Crop both strings symmetrically'ish
 		boolean isEven = (maxLen % 2 == 0);
 		return isEven
 				? s1.substring(0, maxLen / 2 - 1) + "." + s2.substring(0, maxLen / 2)

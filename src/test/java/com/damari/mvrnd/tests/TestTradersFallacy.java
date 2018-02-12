@@ -2,8 +2,8 @@ package com.damari.mvrnd.tests;
 
 import static org.junit.Assert.assertTrue;
 
-import static com.damari.mvrnd.algorithm.Strategy.price;
-import static com.damari.mvrnd.algorithm.Strategy.round;
+import static com.damari.mvrnd.algorithm.Algorithm.price;
+import static com.damari.mvrnd.algorithm.Algorithm.round;
 import static com.damari.mvrnd.coin.Coin.head;
 
 import org.junit.Test;

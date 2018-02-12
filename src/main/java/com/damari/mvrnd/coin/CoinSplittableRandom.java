@@ -39,4 +39,9 @@ public class CoinSplittableRandom extends Coin {
 		return "SplittableRandom";
 	}
 
+	@Override
+	public boolean isCPU() {
+		return true;
+	}
+
 }

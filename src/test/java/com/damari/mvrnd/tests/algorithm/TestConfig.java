@@ -2,7 +2,7 @@ package com.damari.mvrnd.tests.algorithm;
 
 import static org.junit.Assert.assertEquals;
 
-import static com.damari.mvrnd.algorithm.Strategy.price;
+import static com.damari.mvrnd.algorithm.Algorithm.price;
 
 import org.junit.Test;
 

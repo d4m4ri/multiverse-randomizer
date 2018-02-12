@@ -6,9 +6,9 @@ package com.damari.mvrnd.algorithm;
 
 import com.damari.mvrnd.data.OutOfMoneyException;
 import com.damari.mvrnd.order.Broker;
-import com.damari.mvrnd.order.NoCommissionException;
+import com.damari.mvrnd.order.CommissionUndefinedException;
 
-public class BuyAndHold extends Strategy {
+public class BuyAndHold extends Algorithm {
 
 	public static final int undefined = -1;
 
@@ -23,12 +23,12 @@ public class BuyAndHold extends Strategy {
 	}
 
 	@Override
-	public void process(long time, int price) throws NoCommissionException, OutOfMoneyException {
+	public void process(long time, int price) throws CommissionUndefinedException, OutOfMoneyException {
 		super.process(time, price);
 		trade(time, price);
 	}
 
-	private void trade(long time, int price) throws NoCommissionException, OutOfMoneyException {
+	private void trade(long time, int price) throws CommissionUndefinedException, OutOfMoneyException {
 		if (position == undefined) {
 			position = price + spread;
 			broker.buy(time, price, spread, size);

@@ -40,4 +40,9 @@ public class CoinXoRoShiRo128PlusRandom extends Coin {
 		return "XoRoShiRo128PlusRandom";
 	}
 
+	@Override
+	public boolean isCPU() {
+		return true;
+	}
+
 }

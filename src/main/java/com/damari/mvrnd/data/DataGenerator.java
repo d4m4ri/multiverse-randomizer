@@ -1,6 +1,5 @@
 /*
- * Generate time and price series simulating an asset.
- * Thread safe.
+ * Generate datasets of time and price thread safe.
  */
 package com.damari.mvrnd.data;
 
@@ -15,14 +14,14 @@ public class DataGenerator {
 
 	private static final Object lock = new Object();
 
-	public static final int maxBuckets = App.getPhysicalCores();
+	public static final int maxDatasets = App.getPhysicalCores();
 	private static int maxData = 60_000_000; // >= max requested data points in a thread
 
-	private static long[][] bucketTimeSerie;
-	private static int[][] bucketPriceSerie;
-	private static AtomicBoolean[] bucketUsed;
+	private static long[][] datasetTime;
+	private static int[][] datasetPrice;
+	private static AtomicBoolean[] datasetUsed;
 
-	private static int buckets = -1;
+	private static int datasets = -1;
 
 	/** Used as cache for performance */
 	private int minPrice;
@@ -33,14 +32,14 @@ public class DataGenerator {
 	public DataGenerator() {
 		// Init data once
 		synchronized (lock) {
-			if (buckets == -1) {
-				buckets = maxBuckets;
-				System.err.println("INITIALIZING DATA SERIES MEMORY (" + memUsage() + "M / " + maxBuckets + "T)");
-				bucketTimeSerie = new long[buckets][maxData];
-				bucketPriceSerie = new int[buckets][maxData];
-				bucketUsed = new AtomicBoolean[buckets];
-				for (int i = 0; i < buckets; i++) {
-					bucketUsed[i] = new AtomicBoolean(false);
+			if (datasets == -1) {
+				datasets = maxDatasets;
+				System.err.println("INITIALIZING DATA SERIES MEMORY (" + memUsage() + "M / " + maxDatasets + "T)");
+				datasetTime = new long[datasets][maxData];
+				datasetPrice = new int[datasets][maxData];
+				datasetUsed = new AtomicBoolean[datasets];
+				for (int i = 0; i < datasets; i++) {
+					datasetUsed[i] = new AtomicBoolean(false);
 				}
 			}
 		}
@@ -51,8 +50,8 @@ public class DataGenerator {
 	 * @return int with memory usage in MB.
 	 */
 	public int memUsage() {
-		float muTimeSerieB = buckets * maxData * (Long.SIZE / 8f);
-		float muPriceSerieB = buckets * maxData * (Integer.SIZE / 8f);
+		float muTimeSerieB = datasets * maxData * (Long.SIZE / 8f);
+		float muPriceSerieB = datasets * maxData * (Integer.SIZE / 8f);
 		float sum = (muTimeSerieB + muPriceSerieB) / 1000f / 1000f;
 		return (int) sum;
 	}
@@ -68,7 +67,7 @@ public class DataGenerator {
 	 * a non mean reverting process that can move away from the mean either in a positive or negative
 	 * direction. Another characteristic of a random walk is that the variance evolves over time and
 	 * goes to infinity as time goes to infinity; therefore, a random walk cannot be predicted."
-	 * @param bucket Which bucket to put generated data.
+	 * @param datasetId Which dataset to put the generated data in.
 	 * @param coin Coin to use for randomization.
 	 * @param size Number of price points to generate.
 	 * @param time Time inception.
@@ -77,7 +76,7 @@ public class DataGenerator {
 	 * @param timeStep Time step in ms.
 	 * @return Size of data actually generated.
 	 */
-	public int generateRandomWalk(int bucket, final Coin coin, final int size, long time, int price,
+	public int generate(int datasetId, final Coin coin, final int size, long time, int price,
 			final int spread, final long timeStep) {
 		startTime = time;
 
@@ -99,8 +98,8 @@ public class DataGenerator {
 					}
 				}
 			}
-			bucketTimeSerie[bucket][i] = time;
-			bucketPriceSerie[bucket][i] = price;
+			datasetTime[datasetId][i] = time;
+			datasetPrice[datasetId][i] = price;
 			time += timeStep;
 		}
 
@@ -109,36 +108,36 @@ public class DataGenerator {
 	}
 
 	/**
-	 * Find available bucket and lock it.
-	 * @return int with bucket to use.
+	 * Lock available dataset.
+	 * @return Locked dataset Id.
 	 */
-	public int lockBucket() {
-		for (int bucket = 0; bucket < buckets; bucket++) {
-			if (bucketUsed[bucket].compareAndSet(false, true)) {
+	public int lock() {
+		for (int bucket = 0; bucket < datasets; bucket++) {
+			if (datasetUsed[bucket].compareAndSet(false, true)) {
 				return bucket;
 			}
 		}
-		throw new RuntimeException("Couldn't find free bucket. Make sure threads don't exceeds the number of buckets");
+		throw new RuntimeException("Couldn't find available dataset. Make sure threads don't exceeds the number of datasets");
 	}
 
 	/**
-	 * Unlock a specific bucket.
-	 * @param bucket to unlock.
+	 * Unlock dataset.
+	 * @param datasetId to unlock.
 	 */
-	public void unlockBucket(int bucket) {
-		bucketUsed[bucket].set(false);
+	public void unlock(int datasetId) {
+		datasetUsed[datasetId].set(false);
 	}
 
 	/**
 	 * Apply custom time- and price series.
-	 * @param bucket to use.
+	 * @param datasetId to use.
 	 * @param timeSerie long array.
 	 * @param priceSerie int array.
 	 */
-	public void apply(int bucket, final long[] timeSerie, final int[] priceSerie) {
+	public void apply(int datasetId, final long[] timeSerie, final int[] priceSerie) {
 		for (int i = 0; i < timeSerie.length; i++) {
-			bucketTimeSerie[bucket][i] = timeSerie[i];
-			bucketPriceSerie[bucket][i] = priceSerie[i];
+			datasetTime[datasetId][i] = timeSerie[i];
+			datasetPrice[datasetId][i] = priceSerie[i];
 		}
 	}
 
@@ -146,14 +145,14 @@ public class DataGenerator {
 		return getTime(0, i);
 	}
 	public long getTime(final int bucket, final int i) {
-		return bucketTimeSerie[bucket][i];
+		return datasetTime[bucket][i];
 	}
 
 	public int getPrice(final int i) {
 		return getPrice(0, i);
 	}
 	public int getPrice(final int bucket, final int i) {
-		return bucketPriceSerie[bucket][i];
+		return datasetPrice[bucket][i];
 	}
 
 	public int getMinPrice() {

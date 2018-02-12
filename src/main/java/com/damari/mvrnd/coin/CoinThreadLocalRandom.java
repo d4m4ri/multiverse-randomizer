@@ -39,4 +39,9 @@ public class CoinThreadLocalRandom extends Coin {
 		return "ThreadLocalRandom";
 	}
 
+	@Override
+	public boolean isCPU() {
+		return true;
+	}
+
 }

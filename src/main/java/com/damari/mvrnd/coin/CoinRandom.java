@@ -43,4 +43,9 @@ public class CoinRandom extends Coin {
 		return "Random";
 	}
 
+	@Override
+	public boolean isCPU() {
+		return true;
+	}
+
 }

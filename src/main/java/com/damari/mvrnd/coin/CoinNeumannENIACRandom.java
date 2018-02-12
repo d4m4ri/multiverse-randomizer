@@ -132,4 +132,9 @@ public class CoinNeumannENIACRandom extends Coin {
 		return "CoinNeumannENIACRandom";
 	}
 
+	@Override
+	public boolean isCPU() {
+		return true;
+	}
+
 }

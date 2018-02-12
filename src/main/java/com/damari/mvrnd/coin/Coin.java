@@ -35,6 +35,12 @@ public abstract class Coin {
 		return (head ? "head" : "tail");
 	}
 
+	public abstract boolean isCPU();
+
+	public boolean isGPU() {
+		return !isCPU();
+	}
+
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer(32);
