@@ -1,10 +1,12 @@
+plugins {
+	id 'com.github.spotbugs' version '1.6.0'
+}
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.9
+targetCompatibility = 1.9
 version = '0.1'
 
 repositories {
@@ -15,7 +17,7 @@ repositories {
 }
 
 dependencies {
-	// Add deps from Maven
+	// Add Maven deps
 	compile 'org.bytedeco:javacv:0.9',
 		'com.fasterxml.jackson.core:jackson-databind:2.2.3',
 		'com.lambdaworks:scrypt:1.2.0',
@@ -28,7 +30,7 @@ dependencies {
 		'org.slf4j:slf4j-api:1.7.7',
 		'org.slf4j:slf4j-log4j12:1.7.7',
 		'it.unimi.dsi:dsiutils:2.3.3',
-		'com.google.code.findbugs:annotations:3.0.0'
+		'com.github.spotbugs:spotbugs-annotations:3.1.1'
 
 	// Runtime
 	runtime fileTree(dir: 'libs', include: '*.jar')
@@ -86,6 +88,10 @@ checkstyle {
 	configFile = new File(rootDir, 'config/checkstyle/checkstyle.xml')
 }
 
-findbugs {
+spotbugs {
+	// http://gradle.monochromeroad.com/docs/dsl/org.gradle.api.plugins.quality.FindBugsExtension.html
+	toolVersion = '3.1.1'
 	ignoreFailures = false
+	effort = 'max'
+	reportLevel = 'high'
 }

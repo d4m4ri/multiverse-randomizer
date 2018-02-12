@@ -6,6 +6,7 @@ import static com.damari.mvrnd.algorithm.Algorithm.round;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,7 +129,7 @@ public class Executor extends ExecutorAlgo {
 		final int totJobs = stats.addJobCompleted();
 
 		r.append(algo.getSummary());
-		r.append("        Probability: ").append(BigDecimal.valueOf((float)wins / totJobs * 100f).setScale(2, BigDecimal.ROUND_HALF_UP)).append("%\n")
+		r.append("        Probability: ").append(BigDecimal.valueOf((float)wins / totJobs * 100f).setScale(2, RoundingMode.HALF_UP)).append("%\n")
 		 .append("Asset pts requested: ").append(dataSizeReq).append("\n")
 		 .append("Asset pts generated: ").append(dataSizeGen).append("\n")
 		 .append("   Asset start time: ").append(dateTimeFormatter.print(asset.getStartTime())).append("\n")
