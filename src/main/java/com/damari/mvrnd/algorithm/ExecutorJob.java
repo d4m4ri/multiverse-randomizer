@@ -2,7 +2,12 @@ package com.damari.mvrnd.algorithm;
 
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ExecutorJob implements Callable<ExecutorJob> {
+
+	private static final Logger log = LoggerFactory.getLogger(ExecutorJob.class);
 
 	private ExecutorAlgo execAlgo;
 
@@ -12,7 +17,11 @@ public class ExecutorJob implements Callable<ExecutorJob> {
 
 	@Override
 	public ExecutorJob call() {
-		execAlgo.process();
+		try {
+			execAlgo.process();
+		} catch (Exception e) {
+			log.error("Failed to process thread.", e);
+		}
 		return this;
 	}
 

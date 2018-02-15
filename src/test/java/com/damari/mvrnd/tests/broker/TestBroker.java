@@ -1,4 +1,12 @@
+/*
+ * TODO: balance
+ * TODO: commissionPercent
+ */
 package com.damari.mvrnd.tests.broker;
+
+import static org.junit.Assert.assertEquals;
+
+import static com.damari.mvrnd.algorithm.Algorithm.price;
 
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -8,6 +16,14 @@ import com.damari.mvrnd.order.Broker;
 import com.damari.mvrnd.order.CommissionUndefinedException;
 
 public class TestBroker {
+
+	@Test
+	public void givenDepositThenExpectDepositToMatch() {
+		int deposit = price(10_000.00f);
+		Broker broker = new Broker();
+		broker.deposit(deposit);
+		assertEquals("Unexpected deposit", deposit, broker.getBalance());
+	}
 
 	@Test(expected=OutOfMoneyException.class)
 	public void givenNoMoneyAndBuyThenExpectOutOfMoneyException() throws Exception {

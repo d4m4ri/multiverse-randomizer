@@ -10,6 +10,7 @@ import static com.damari.mvrnd.coin.Coin.tail;
 import static com.damari.mvrnd.coin.Coin.headsOnly;
 import static com.damari.mvrnd.coin.Coin.tailsOnly;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class TestCoin {
 
 	@Test
 	public void givenTailsOnlyProbabilityThenExpectTailsOnly() {
-		List<Coin> coins = allCoins(tailsOnly);
+		List<Coin> coins = coins(tailsOnly);
 		for (int i = 0; i < coins.size(); i++) {
 			for (int n = 0; n < 100_000; n++) {
 				assertEquals("Expected tails only using coin " + coins.get(i), tail, coins.get(i).toss());
@@ -59,7 +60,7 @@ public class TestCoin {
 
 	@Test
 	public void givenHeadsOnlyProbabilityThenExpectHeadsOnly() {
-		List<Coin> coins = allCoins(headsOnly);
+		List<Coin> coins = coins(headsOnly);
 		for (int i = 0; i < coins.size(); i++) {
 			for (int n = 0; n < 100_000; n++) {
 				assertEquals("Expected heads only using coin " + coins.get(i), head, coins.get(i).toss());
@@ -69,12 +70,7 @@ public class TestCoin {
 
 	@Test
 	public void givenCoinSeedThenExpectDeterministicOutcome() throws Exception {
-		List<Coin> coins = Arrays.asList(
-				//new CoinSecureRandom(),
-				new CoinRandom(),
-				//new CoinSplittableRandom(),
-				new CoinXoRoShiRo128PlusRandom(),
-				new CoinNeumannENIACRandom());
+		List<Coin> coins = seedlessCoins(fair);
 		boolean[] tosses = new boolean[500];
 		for (int c = 0; c < coins.size(); c++) {
 			Coin coin = coins.get(c);
@@ -84,7 +80,7 @@ public class TestCoin {
 			}
 			coin.setSeed(123L);
 			for (int i = 0; i < 500; i++) {
-				assertEquals("Expected deterministic coin outcome for coin[" + i + "] at iteration " + i,
+				assertEquals("Expected deterministic coin outcome for " + coin + " at iteration " + i,
 						tosses[i], coin.toss());
 			}
 		}
@@ -92,7 +88,7 @@ public class TestCoin {
 
 	@Test
 	public void givenCoinTossThenDontExpectAnyLongSerieOfHeadsOrTails() {
-		List<Coin> coins = allCoins(fair);
+		List<Coin> coins = coins(fair);
 		for (int c = 0; c < coins.size(); c++) {
 			Coin coin = coins.get(c);
 			boolean prevToss = false;
@@ -112,7 +108,7 @@ public class TestCoin {
 	}
 
 	private long[] tossLotsOfFairCoins(long tossCount) {
-		List<Coin> coins = allCoins(fair);
+		List<Coin> coins = coins(fair);
 		long sum1 = 0, sum2 = 0, sum3 = 0, sum4 = 0;
 		for (long i = 0; i < tossCount; i++) {
 			sum1 += coins.get(0).toss() == head ? 1 : -1;
@@ -131,14 +127,26 @@ public class TestCoin {
 		return new long[] {sum1, sum2, sum3, sum4};
 	}
 
-	private List<Coin> allCoins(float probability) {
-		return Arrays.asList(
+	private List<Coin> coins(float probability) {
+		return new ArrayList<>(Arrays.asList(
 				new CoinNeumannENIACRandom(probability),
 				new CoinRandom(probability),
 				new CoinSecureRandom(probability),
 				new CoinSplittableRandom(probability),
 				new CoinThreadLocalRandom(probability),
-				new CoinXoRoShiRo128PlusRandom(probability));
+				new CoinXoRoShiRo128PlusRandom(probability)));
+	}
+
+	private List<Coin> seedlessCoins(float probability) {
+		List<Coin> seedlessCoins = new ArrayList<>();
+		for (Coin coin : coins(probability)) {
+			if (!(coin instanceof CoinSecureRandom) &&
+				!(coin instanceof CoinSplittableRandom) &&
+				!(coin instanceof CoinThreadLocalRandom)) {
+				seedlessCoins.add(coin);
+			}
+		}
+		return seedlessCoins;
 	}
 
 }

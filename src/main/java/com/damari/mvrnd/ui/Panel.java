@@ -1,5 +1,6 @@
 package com.damari.mvrnd.ui;
 
+import static com.damari.mvrnd.algorithm.Algorithm.price;
 import static com.damari.mvrnd.algorithm.Algorithm.round;
 
 import javax.swing.JFrame;
@@ -26,6 +27,7 @@ import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.coin.CoinSecureRandom;
 import com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom;
 import com.damari.mvrnd.data.DataGenerator;
+import com.damari.mvrnd.data.DataLockException;
 import com.damari.mvrnd.order.Broker;
 
 public class Panel extends JPanel {
@@ -86,7 +88,7 @@ public class Panel extends JPanel {
 		frame.setVisible(true);
 	}
 
-	public void drawStockPrice(Graphics g) {
+	public void drawStockPrice(Graphics g) throws DataLockException {
 		Coin coin = new CoinXoRoShiRo128PlusRandom(50.050f); // visible at 50.05 and higher
 		//Coin coin = new CoinSecureRandom(50.02f); // visible at 50.04 and higher
 		//Coin coin = new Coin(50.10f); // visible at 50.04 and higher
@@ -219,10 +221,17 @@ public class Panel extends JPanel {
 	public void run() {
 		coloredRectangles.clear();
 
-		int datasetId = asset.lock();
-		asset.generate(datasetId, new CoinSecureRandom(), 1000, new DateTime().getMillis(),
-				(int)(80.00f * 100f), (int)(0.10f * 100f), 345);
-		asset.unlock(datasetId);
+		try {
+			int datasetId = asset.lock();
+			Coin coin = new CoinSecureRandom();
+			int dataSize = 1000;
+			long startDateTime = new DateTime().getMillis();
+			int price = price(80.00f);
+			asset.generate(datasetId, coin, dataSize, startDateTime, price, (int)(0.10f * 100f), 345);
+			asset.unlock(datasetId);
+		} catch (DataLockException e) {
+			log.error("Failed to acquire data lock", e);
+		}
 
 		repaint();
 	}
@@ -240,11 +249,15 @@ public class Panel extends JPanel {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-
-		drawStockPrice(g);
+		try {
+			drawStockPrice(g);
+		} catch (DataLockException e) {
+			log.error("Failed to acquire data lock", e);
+		}
 		drawLabels(g);
 		drawAxis(g);
 		drawUser(g);
+
 	}
 
 	class MyMouseListener extends MouseInputAdapter {

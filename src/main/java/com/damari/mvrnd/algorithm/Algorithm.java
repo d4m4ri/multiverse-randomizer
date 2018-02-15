@@ -79,6 +79,9 @@ public abstract class Algorithm {
 	public static String round(final long value) {
 		return BigDecimal.valueOf(value).divide(bigDecimal100, 2, RoundingMode.HALF_UP).toString();
 	}
+	public static String round(final float value) {
+		return BigDecimal.valueOf(value).divide(bigDecimal100, 2, RoundingMode.HALF_UP).toString();
+	}
 
 	/**
 	 * Convert price from float to integer using factor 100.

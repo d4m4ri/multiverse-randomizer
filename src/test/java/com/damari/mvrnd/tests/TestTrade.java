@@ -19,6 +19,7 @@ import com.damari.mvrnd.algorithm.ExecutorJob;
 import com.damari.mvrnd.app.App;
 import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.data.Statistics;
+import com.damari.mvrnd.order.Broker;
 import com.damari.mvrnd.data.MyThreadPoolExecutor;
 import com.damari.mvrnd.util.StringHelper;
 import com.damari.mvrnd.util.Timer;
@@ -27,16 +28,16 @@ public class TestTrade {
 
 	private static final Logger log = LoggerFactory.getLogger(TestTrade.class.getName());
 
-	public static Statistics usingThreads(Class<?> algoClazz, Config config, int iters, Coin coin, int deposit,
-			float commission, float goalPercent, float riskPercent, long startTime, int price, int tradeSize,
+	public static Statistics usingThreads(Class<?> algoClazz, Config config, Broker broker, int iters, Coin coin,
+			float goalPercent, float riskPercent, long startTime, int price, int tradeSize,
 			int spread, long timeStepMs, int dataSizeReq) throws Exception {
 
 		Timer time = new Timer();
 		time.start();
-		MyThreadPoolExecutor executorService = setupThreadPool(config, coin, iters, goalPercent, riskPercent, tradeSize, spread);
+		MyThreadPoolExecutor executorService = setupThreadPool(config, broker, coin, iters, goalPercent, riskPercent, tradeSize, spread);
 		Statistics stats = new Statistics();
-		List<ExecutorJob> todos = createJobs(stats, algoClazz, config, coin, iters, deposit, goalPercent, riskPercent,
-				tradeSize, commission, startTime, price, spread, timeStepMs, dataSizeReq);
+		List<ExecutorJob> todos = createJobs(stats, algoClazz, config, broker, coin, iters, goalPercent, riskPercent,
+				tradeSize, startTime, price, spread, timeStepMs, dataSizeReq);
 		List<Future<ExecutorJob>> jobs = submitJobs(executorService, todos);
 		shutdown(executorService);
 		awaitTermination(executorService);
@@ -48,7 +49,7 @@ public class TestTrade {
 		return stats;
 	}
 
-	private static MyThreadPoolExecutor setupThreadPool(Config config, Coin coin, int iters,
+	private static MyThreadPoolExecutor setupThreadPool(Config config, Broker broker, Coin coin, int iters,
 			float goalPercent, float riskPercent, int tradeSize, int spread) {
 		int threads = App.getPhysicalCores();
 		log.info("------ SETUP ------");
@@ -56,9 +57,10 @@ public class TestTrade {
 		log.info("   Iterations: {}", iters);
 		log.info("         Goal: {}%", goalPercent);
 		log.info("         Risk: {}%", riskPercent);
-		log.info("   Trade Size: {}", tradeSize);
 		log.info("         Coin: {}", coin);
+		log.info("   Trade Size: {}", tradeSize);
 		log.info("       Spread: {}", spread);
+		log.info("   Commission: {}%", broker.getCommissionPercent());
 		Iterator<String> keys = config.getKeys();
 		while (keys.hasNext()) {
 			String key = keys.next();
@@ -70,17 +72,17 @@ public class TestTrade {
 		return new MyThreadPoolExecutor(threads, threads, 60);
 	}
 
-	private static List<ExecutorJob> createJobs(Statistics stats, Class<?> algoClazz, Config config, Coin coin, int iters,
-			int deposit, float goalPercent, float riskPercent, int tradeSize, float commission, long time, int price,
+	private static List<ExecutorJob> createJobs(Statistics stats, Class<?> algoClazz, Config config, Broker broker, Coin coin,
+			int iters, float goalPercent, float riskPercent, int tradeSize, long time, int price,
 			int spread, long timeStepMs, int dataSizeReq) {
 		log.info("Creating jobs ...");
-		int risk = (int)((float)deposit * (100f - riskPercent) / 100f);
-		int winClassification = (int)((float)deposit * (1f + goalPercent / 100f));
+		int risk = (int)((float)broker.getDeposit() * (100f - riskPercent) / 100f);
+		int winClassification = (int)((float)broker.getDeposit() * (1f + goalPercent / 100f));
 		int taskId = 0;
 		List<ExecutorJob> todo = new ArrayList<>(iters);
 		while (iters > 0) {
 			Executor algoStrategy = new Executor(taskId++, algoClazz, config, stats, coin, risk, winClassification,
-					deposit, commission, time, price, tradeSize, spread, timeStepMs, dataSizeReq);
+					broker.getDeposit(), broker.getCommissionPercent(), time, price, tradeSize, spread, timeStepMs, dataSizeReq);
 			ExecutorJob algoJob = new ExecutorJob(algoStrategy);
 			todo.add(algoJob);
 			iters--;

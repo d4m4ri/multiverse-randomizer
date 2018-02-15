@@ -30,7 +30,7 @@ public class TestDataGeneration {
 
 	@Test
 	public void givenGenerate4000StockDataEntriesUsingHeadsOnlyCoinThenExpect4000StockEntries() throws Exception {
-		for (Coin coin : allCoins(headsOnly)) {
+		for (Coin coin : coins(headsOnly)) {
 			long time = dateTimeFormatter.parseDateTime("2016-11-18T09:00:00.000+0100").getMillis();
 			int price = price(80.00f);
 			int priceStep = price(0.05f);
@@ -49,7 +49,7 @@ public class TestDataGeneration {
 
 	@Test
 	public void givenGenerate5000StockDataEntriesUsingTailsOnlyCoinThenExpectLessThan5000StockEntries() throws Exception {
-		for (Coin coin : allCoins(tailsOnly)) {
+		for (Coin coin : coins(tailsOnly)) {
 			long time = dateTimeFormatter.parseDateTime("2017-05-18T09:00:00.000+0100").getMillis();
 			int price = price(90.00f);
 			int priceStep = price(0.05f);
@@ -68,7 +68,7 @@ public class TestDataGeneration {
 
 	@Test
 	public void givenGenerateDataTwiceForEachBucketForEachCoinThenExpectFirstGenerationToBeOverwritten() throws Exception {
-		for (Coin coin : allCoins(fair)) {
+		for (Coin coin : coins(fair)) {
 			for (int buckets = 0; buckets < DataGenerator.maxDatasets; buckets++) {
 				// Generate random time and price data series
 				long time = dateTimeFormatter.parseDateTime("2018-01-18T09:00:00.000+0100").getMillis();
@@ -102,7 +102,7 @@ public class TestDataGeneration {
 		}
 	}
 
-	private List<Coin> allCoins(float probability) {
+	private List<Coin> coins(float probability) {
 		return Arrays.asList(
 				new CoinNeumannENIACRandom(probability),
 				new CoinRandom(probability),

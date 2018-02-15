@@ -110,14 +110,15 @@ public class DataGenerator {
 	/**
 	 * Lock available dataset.
 	 * @return Locked dataset Id.
+	 * @throws DataLockException if lock not acquired.
 	 */
-	public int lock() {
+	public int lock() throws DataLockException {
 		for (int bucket = 0; bucket < datasets; bucket++) {
 			if (datasetUsed[bucket].compareAndSet(false, true)) {
 				return bucket;
 			}
 		}
-		throw new RuntimeException("Couldn't find available dataset. Make sure threads don't exceeds the number of datasets");
+		throw new DataLockException("No available dataset. Make sure threads don't exceeds the number of datasets");
 	}
 
 	/**

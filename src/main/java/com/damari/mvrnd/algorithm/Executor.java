@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.data.DataGenerator;
+import com.damari.mvrnd.data.DataLockException;
 import com.damari.mvrnd.data.OutOfMoneyException;
 import com.damari.mvrnd.data.Statistics;
 import com.damari.mvrnd.order.Broker;
@@ -60,7 +61,7 @@ public class Executor extends ExecutorAlgo {
 	}
 
 	@Override
-	public boolean process() {
+	public boolean process() throws DataLockException {
 		stats.addJobStarted();
 
 		Timer timer = new Timer();

@@ -2,6 +2,9 @@ package com.damari.mvrnd.order;
 
 import static com.damari.mvrnd.algorithm.Algorithm.round;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,9 +20,14 @@ public class Broker {
 
 	private Orders orders;
 
+	/* Initial deposit */
+	private int deposit;
+
+	/* Current balance */
 	private int balance;
 
-	private int commissionFixed;
+	/* Commission models */
+	private float commissionFixed;
 	private float commissionPercent;
 
 	private int commissionSum;
@@ -29,18 +37,20 @@ public class Broker {
 		this(0);
 	}
 
-	public Broker(int balance) {
+	public Broker(int deposit) {
 		this.orders = new Orders();
-		this.balance = balance;
+		this.deposit = deposit;
+		this.balance = deposit;
 		this.commissionFixed = undefined;
 		this.commissionPercent = undefined;
 		this.commissionSum = 0;
 		this.lossSum = 0;
 	}
 
-	public Broker reset(int balance) {
+	public Broker reset(int deposit) {
 		this.orders.clear();
-		this.balance = balance;
+		this.deposit = deposit;
+		this.balance = deposit;
 		this.commissionFixed = undefined;
 		this.commissionPercent = undefined;
 		this.commissionSum = 0;
@@ -60,21 +70,28 @@ public class Broker {
 	}
 
 	/**
-	 * Commission cost in percent.
-	 * @param commissionPercent with commission percent per transaction.
+	 * Set commission percent.
+	 * @param commissionPercent per transaction.
 	 * @return this
 	 */
 	public Broker setCommissionPercent(float commissionPercent) {
-		this.commissionPercent = commissionPercent;
+		this.commissionPercent = commissionPercent / 100f; // 0.069% -> 0.00069
 		this.commissionFixed = undefined;
 		return this;
 	}
 
+	/**
+	 * Calculate commission.
+	 * @param price of asset.
+	 * @param spread in asset.
+	 * @param size of trade.
+	 * @return
+	 */
 	private int calculateCommission(int price, int spread, int size) {
 		if (commissionFixed != undefined) {
-			return commissionFixed;
+			return (int) commissionFixed;
 		} else {
-			return (int)((price + spread) * size * commissionPercent);
+			return (int) ((price + spread) * size * commissionPercent);
 		}
 	}
 
@@ -127,12 +144,20 @@ public class Broker {
 		return orders;
 	}
 
+	public int getDeposit() {
+		return deposit;
+	}
+
 	/**
 	 * Get realized balance, not mark to market of open positions. Use NAV for this.
-	 * @return BigDecimal with realized mark-to-market balance.
+	 * @return float with current balance.
 	 */
 	public int getBalance() {
 		return balance;
+	}
+
+	public float getCommissionPercent() {
+		return commissionPercent * 100f;
 	}
 
 	public int getCommissionSum() {
@@ -141,6 +166,20 @@ public class Broker {
 
 	public int getLossSum() {
 		return lossSum;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer(150);
+		sb.append("Deposit ").append(deposit);
+		if (commissionFixed != undefined) {
+			sb.append(", commission ").append(commissionFixed);
+		} else if (commissionPercent != undefined) {
+			BigDecimal bd = new BigDecimal(commissionPercent / 100f).setScale(3, RoundingMode.HALF_UP);
+			sb.append(", commission ").append(bd.toString()).append("%");
+		} else {
+			sb.append("Unknown commission");
+		}
+		return sb.toString();
 	}
 
 }
