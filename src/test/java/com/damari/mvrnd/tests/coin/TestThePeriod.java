@@ -11,6 +11,7 @@ import static com.damari.mvrnd.coin.Coin.head;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ public class TestThePeriod {
 
 	@Test
 	public void givenEachCoinsRandomWalkVisualizedThenExpectFairDistribution() throws InterruptedException {
+		if (GraphicsEnvironment.isHeadless()) return;
+
 		int width = 1920;
 		int height = 1080;
 		int pixels = width * height;
