@@ -13,8 +13,9 @@ import com.damari.mvrnd.algorithm.BuyAndHold;
 import com.damari.mvrnd.algorithm.BuyAndHoldConfig;
 import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.data.DataGenerator;
+import com.damari.mvrnd.data.DataSet;
 import com.damari.mvrnd.data.Statistics;
-import com.damari.mvrnd.order.Broker;
+import com.damari.mvrnd.broker.Broker;
 import com.damari.mvrnd.tests.TestTrade;
 
 public class TestBuyAndHoldAlgo {
@@ -35,20 +36,21 @@ public class TestBuyAndHoldAlgo {
 		long time = dateTimeFormatter.parseDateTime("2016-11-18T09:00:00.000+0100").getMillis();
 
 		// Render doubling of price
-		long[] timeSerie = new long[1000];
-		int[] priceSerie = new int[1000];
+		long[] timeSeries = new long[1000];
+		int[] priceSeries = new int[1000];
 		for (int i = 0; i < 1000; i++) {
-			timeSerie[i] = time;
-			priceSerie[i] = price;
+			timeSeries[i] = time;
+			priceSeries[i] = price;
 			time += 60_000;
 			price += spread;
 		}
-		asset.apply(datasetId, timeSerie, priceSerie);
+		DataSet dataSet = new DataSet(timeSeries, priceSeries);
+		asset.apply(datasetId, dataSet);
 
 		// Run algo
 		BuyAndHoldConfig config = new BuyAndHoldConfig();
 		BuyAndHold algo = new BuyAndHold(config, broker, spread, tradeSize);
-		for (int i = 0; i < timeSerie.length; i++) {
+		for (int i = 0; i < timeSeries.length; i++) {
 			algo.process(asset.getTime(i), asset.getPrice(i));
 		}
 

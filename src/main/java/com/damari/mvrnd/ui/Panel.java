@@ -28,7 +28,7 @@ import com.damari.mvrnd.coin.CoinSecureRandom;
 import com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom;
 import com.damari.mvrnd.data.DataGenerator;
 import com.damari.mvrnd.data.DataLockException;
-import com.damari.mvrnd.order.Broker;
+import com.damari.mvrnd.broker.Broker;
 
 public class Panel extends JPanel {
 

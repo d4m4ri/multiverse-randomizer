@@ -23,6 +23,7 @@ import com.damari.mvrnd.coin.CoinSplittableRandom;
 import com.damari.mvrnd.coin.CoinThreadLocalRandom;
 import com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom;
 import com.damari.mvrnd.data.DataGenerator;
+import com.damari.mvrnd.data.DataSet;
 
 public class TestDataGeneration {
 
@@ -83,14 +84,15 @@ public class TestDataGeneration {
 				assertEquals("Asset data size should be equal to requested size", dataSizeReq, dataSizeGen);
 
 				// Generate zero data price data series
-				long[] timeSerie = new long[dataSizeReq];
-				int[] priceSerie = new int[dataSizeReq];
+				long[] timeSeries = new long[dataSizeReq];
+				int[] priceSeries = new int[dataSizeReq];
 				for (int i = 0; i < dataSizeReq; i++) {
-					timeSerie[i] = time;
-					priceSerie[i] = 0;
+					timeSeries[i] = time;
+					priceSeries[i] = 0;
 					time += 1;
 				}
-				asset.apply(datasetId, timeSerie, priceSerie);
+				DataSet dataSet = new DataSet(timeSeries, priceSeries);
+				asset.apply(datasetId, dataSet);
 
 				for (int i = 0; i < dataSizeReq; i++) {
 					price = asset.getPrice(datasetId, i);

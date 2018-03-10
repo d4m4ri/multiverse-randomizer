@@ -12,8 +12,8 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 import com.damari.mvrnd.data.OutOfMoneyException;
-import com.damari.mvrnd.order.Broker;
-import com.damari.mvrnd.order.CommissionUndefinedException;
+import com.damari.mvrnd.broker.Broker;
+import com.damari.mvrnd.broker.CommissionUndefinedException;
 
 public class TestBroker {
 

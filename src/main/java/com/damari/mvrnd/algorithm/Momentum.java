@@ -4,8 +4,8 @@
 package com.damari.mvrnd.algorithm;
 
 import com.damari.mvrnd.data.OutOfMoneyException;
-import com.damari.mvrnd.order.Broker;
-import com.damari.mvrnd.order.CommissionUndefinedException;
+import com.damari.mvrnd.broker.Broker;
+import com.damari.mvrnd.broker.CommissionUndefinedException;
 
 public class Momentum extends Algorithm {
 

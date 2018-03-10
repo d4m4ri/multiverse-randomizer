@@ -1,5 +1,7 @@
 package com.damari.mvrnd.data;
 
+import static com.damari.mvrnd.algorithm.Algorithm.price;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -21,39 +23,115 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.damari.mvrnd.util.Timer;
 
 public class Ticker {
 
 	private static final Logger log = LoggerFactory.getLogger(Ticker.class);
 
 	/**
+	 * Transform ticker data to data set.
+	 * @param tickerData string.
+	 * @return DataSet with time- and price series.
+	 * @throws DataSetException if dataset exception occurs.
+	 */
+	public static DataSet transform(String tickerData) throws DataSetException {
+		final int tickerDate = 0;	// 1993-01-29
+		final int tickerOpen = 1;	// 43.96
+		final int tickerHigh = 2;	// 43.96
+		final int tickerLow = 3;		// 43.75
+		final int tickerClose = 4;	// 43.93
+		String[] data = tickerData.split("\n");
+
+		Timer timer = new Timer();
+
+		DataSet dataSet = new DataSet();
+		for (int row = 1; row < data.length; row++) { // skip first row (TOC)
+			String[] daily = data[row].split(",");
+			int open = price(Float.valueOf(daily[tickerOpen]));
+			int high = price(Float.valueOf(daily[tickerHigh]));
+			int low = price(Float.valueOf(daily[tickerLow]));
+			int close = price(Float.valueOf(daily[tickerClose]));
+
+			// Chop day at NYSE into two chunks, early day and midday
+			// 0930   1030   1130   1230   1330   1430   1530   1600   (6h30m)
+			long begin = new DateTime(daily[tickerDate]).plusHours(9).plusMinutes(30).getMillis();	// 1993-01-29 09:30:00
+			long earlyMidday = new DateTime(begin).plusHours(2).plusMinutes(10).getMillis();			// 1993-01-29 11:40:00
+			long lateMidday = new DateTime(earlyMidday).plusHours(2).plusMinutes(10).getMillis();	// 1993-01-29 13:50:00
+			long end = new DateTime(lateMidday).plusHours(2).plusMinutes(10).getMillis();			// 1993-01-29 16:00:00
+
+			//log.info("begin={}; end={}; open={}; high={}; low={}; close={}",
+			//		new DateTime(begin), new DateTime(end), round(open), round(high), round(low), round(close));
+			DataSet dsChunk1 = createTickerData(begin, earlyMidday, open, high);			// open -> high
+			DataSet dsChunk2 = createTickerData(earlyMidday, lateMidday, high, low);		// high -> low
+			DataSet dsChunk3 = createTickerData(lateMidday, end, low, close);			// low -> close
+			dataSet.append(dsChunk1);
+			dataSet.append(dsChunk2);
+			dataSet.append(dsChunk3);
+		}
+
+		timer.stop();
+		return dataSet;
+	}
+
+	/**
+	 * Generate time- and price series for a given time period with price linearly between two price points.
+	 * @param begin of time series (ms since epoch).
+	 * @param end of time series (ms since epoch).
+	 * @param priceStarts at.
+	 * @param priceEnds at.
+	 * @return DataSet with time- and price series.
+	 * @throws DataSetException if dataset exception occurs.
+	 */
+	private static DataSet createTickerData(long begin, long end, int priceStarts, int priceEnds) throws DataSetException {
+		int tickTimeMs = 5 * 60 * 1000; // 5m
+		int ticks = (int)((end - begin) / tickTimeMs);
+		int priceDeltaPerTick = (priceEnds - priceStarts) / ticks;
+
+		long[] timeSeries = new long[ticks];
+		int[] priceSeries = new int[ticks];
+		long iterTime = begin;
+		int iterPrice = priceStarts;
+		for (int i = 0; i < ticks; i++) {
+			timeSeries[i] = iterTime;
+			priceSeries[i] = iterPrice;
+			iterTime += tickTimeMs;
+			iterPrice += priceDeltaPerTick;
+		}
+
+		return new DataSet(timeSeries, priceSeries);
+	}
+
+	/**
 	 * Fetch ticker data and write to file. If already fetched, return cached data on disk.
 	 * @param ticker string.
-	 * @return CSV content or null if fetch failed.
+	 * @return CSV content or null if fetch failed or content is empty.
 	 * @throws IOException if there's net or disk error.
 	 * @throws InterruptedException if retry idle fails.
 	 */
 	public static String readData(String ticker) throws IOException, InterruptedException {
-		if (fileExists(ticker)) {
-			String data = fetchFile(ticker);
-			return data;
-		} else {
-			ImmutablePair<String, String> config = fetchConfig(ticker);
-			if (config == null) return null;
-			String data = fetchNet(ticker, config.left, config.right);
-			if (data == null) return null;
-			writeData(ticker, data);
+		if (cacheExists(ticker)) {
+			String data = fetchCache(ticker);
 			return data;
 		}
+
+		ImmutablePair<String, String> config = fetchConfig(ticker);
+		if (config == null) return null;
+		String data = fetchNet(ticker, config.left, config.right);
+		if (data == null) return null;
+		storeData(ticker, data);
+		return data;
 	}
 
 	/**
-	 * Fetch ticker data from file.
+	 * Fetch ticker data cache.
 	 * @throws IOException if file error.
 	 */
-	private static String fetchFile(String ticker) throws IOException {
+	private static String fetchCache(String ticker) throws IOException {
 		Path path = FileSystems.getDefault().getPath("src/main/resources/ticker", ticker.toLowerCase() + ".csv");
 		BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8);
 		String data = br.lines().collect(Collectors.joining("\n"));
@@ -62,22 +140,22 @@ public class Ticker {
 	}
 
 	/**
-	 * Check if ticker file already exists.
+	 * Check if ticker already exists.
 	 * @param ticker string.
-	 * @return boolean with file exists or not.
+	 * @return boolean if cache exists.
 	 */
-	private static boolean fileExists(String ticker) {
+	private static boolean cacheExists(String ticker) {
 		File file = FileSystems.getDefault().getPath("src/main/resources/ticker", ticker.toLowerCase() + ".csv").toFile();
 		return file.exists();
 	}
 
 	/**
-	 * Write ticker data to file.
+	 * Store ticker data to file.
 	 * @param ticker string.
 	 * @param data string.
-	 * @throws IOException if write fails.
+	 * @throws IOException if store fails.
 	 */
-	private static void writeData(String ticker, String data) throws IOException {
+	private static void storeData(String ticker, String data) throws IOException {
 		Path path = FileSystems.getDefault().getPath("src/main/resources/ticker", ticker.toLowerCase() + ".csv");
 		BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 		bw.write(data, 0, data.length());

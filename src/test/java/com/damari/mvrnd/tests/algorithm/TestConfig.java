@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.damari.mvrnd.algorithm.BuyAndHold;
 import com.damari.mvrnd.algorithm.BuyAndHoldConfig;
-import com.damari.mvrnd.order.Broker;
+import com.damari.mvrnd.broker.Broker;
 
 public class TestConfig {
 

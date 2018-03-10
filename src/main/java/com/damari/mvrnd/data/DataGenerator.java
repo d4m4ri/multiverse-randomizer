@@ -15,7 +15,7 @@ public class DataGenerator {
 	private static final Object lock = new Object();
 
 	public static final int maxDatasets = App.getPhysicalCores();
-	private static int maxData = 60_000_000; // >= max requested data points in a thread
+	private static int maxData = 60_000_000; // max number of data points (time and price) in a thread
 
 	private static long[][] datasetTime;
 	private static int[][] datasetPrice;
@@ -132,13 +132,14 @@ public class DataGenerator {
 	/**
 	 * Apply custom time- and price series.
 	 * @param datasetId to use.
-	 * @param timeSerie long array.
-	 * @param priceSerie int array.
+	 * @param dataSet with time and price.
 	 */
-	public void apply(int datasetId, final long[] timeSerie, final int[] priceSerie) {
-		for (int i = 0; i < timeSerie.length; i++) {
-			datasetTime[datasetId][i] = timeSerie[i];
-			datasetPrice[datasetId][i] = priceSerie[i];
+	public void apply(int datasetId, DataSet dataSet) {
+		long[] timeSeries = dataSet.getTimeSeries();
+		int[] priceSeries = dataSet.getPriceSeries();
+		for (int i = 0; i < timeSeries.length; i++) {
+			datasetTime[datasetId][i] = timeSeries[i];
+			datasetPrice[datasetId][i] = priceSeries[i];
 		}
 	}
 
