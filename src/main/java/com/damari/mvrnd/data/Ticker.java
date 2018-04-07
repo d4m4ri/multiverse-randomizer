@@ -27,8 +27,6 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.damari.mvrnd.util.Timer;
-
 public class Ticker {
 
 	private static final Logger log = LoggerFactory.getLogger(Ticker.class);
@@ -46,9 +44,6 @@ public class Ticker {
 		final int tickerLow = 3;		// 43.75
 		final int tickerClose = 4;	// 43.93
 		String[] data = tickerData.split("\n");
-
-		Timer timer = new Timer();
-
 		DataSet dataSet = new DataSet();
 		for (int row = 1; row < data.length; row++) { // skip first row (TOC)
 			String[] daily = data[row].split(",");
@@ -57,7 +52,7 @@ public class Ticker {
 			int low = price(Float.valueOf(daily[tickerLow]));
 			int close = price(Float.valueOf(daily[tickerClose]));
 
-			// Chop day at NYSE into two chunks, early day and midday
+			// Chop the day into time chunks
 			// 0930   1030   1130   1230   1330   1430   1530   1600   (6h30m)
 			long begin = new DateTime(daily[tickerDate]).plusHours(9).plusMinutes(30).getMillis();	// 1993-01-29 09:30:00
 			long earlyMidday = new DateTime(begin).plusHours(2).plusMinutes(10).getMillis();			// 1993-01-29 11:40:00
@@ -73,8 +68,6 @@ public class Ticker {
 			dataSet.append(dsChunk2);
 			dataSet.append(dsChunk3);
 		}
-
-		timer.stop();
 		return dataSet;
 	}
 
@@ -132,8 +125,7 @@ public class Ticker {
 	 * @throws IOException if file error.
 	 */
 	private static String fetchCache(String ticker) throws IOException {
-		Path path = FileSystems.getDefault().getPath("src/main/resources/ticker", ticker.toLowerCase() + ".csv");
-		BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8);
+		BufferedReader br = Files.newBufferedReader(tickerPath(ticker), StandardCharsets.UTF_8);
 		String data = br.lines().collect(Collectors.joining("\n"));
 		br.close();
 		return data;
@@ -145,7 +137,7 @@ public class Ticker {
 	 * @return boolean if cache exists.
 	 */
 	private static boolean cacheExists(String ticker) {
-		File file = FileSystems.getDefault().getPath("src/main/resources/ticker", ticker.toLowerCase() + ".csv").toFile();
+		File file = tickerPath(ticker).toFile();
 		return file.exists();
 	}
 
@@ -156,10 +148,18 @@ public class Ticker {
 	 * @throws IOException if store fails.
 	 */
 	private static void storeData(String ticker, String data) throws IOException {
-		Path path = FileSystems.getDefault().getPath("src/main/resources/ticker", ticker.toLowerCase() + ".csv");
-		BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+		BufferedWriter bw = Files.newBufferedWriter(tickerPath(ticker), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 		bw.write(data, 0, data.length());
 		bw.close();
+	}
+
+	/**
+	 * Get tickers resource path.
+	 * @param ticker string.
+	 * @return Path to ticker data.
+	 */
+	private static Path tickerPath(String ticker) {
+		return FileSystems.getDefault().getPath("src", "main", "resources", "ticker", ticker.toLowerCase() + ".csv");
 	}
 
 	/**

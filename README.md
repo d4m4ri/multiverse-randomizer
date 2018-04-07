@@ -1,6 +1,6 @@
-multiverse-randomizer is a tool to test various concepts in random'ish milieus.
+multiverse-randomizer is a tool to test various concepts in various pseudo-random milieus.
 
-Requires 6GB RAM or more and Java 1.9
+Requirements: Java 1.9, Gradle, 16 GB RAM or more
 
 # INSTALL (MAC)
 brew install gradle
