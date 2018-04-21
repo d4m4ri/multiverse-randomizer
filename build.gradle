@@ -6,8 +6,8 @@ apply plugin: 'eclipse'
 apply plugin: 'checkstyle'
 
 allprojects {
-    sourceCompatibility = 9
-    targetCompatibility = 9
+    sourceCompatibility = 10
+    targetCompatibility = 10
 }
 
 version = '0.1'
@@ -72,20 +72,25 @@ jar {
 	}
 }
 
-// add source to where is possible
-task sourcesJar(type: Jar, dependsOn: classes) {
+javadoc {
+	source = sourceSets.main.allJava
+	classpath = configurations.compileClasspath
+	options.addBooleanOption('html5', true)
+}
+
+task packageSources(type: Jar, dependsOn: 'classes') {
 	classifier = 'sources'
 	from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+task packageJavadoc(type: Jar, dependsOn: 'javadoc') {
+	from javadoc
 	classifier = 'javadoc'
-	from javadoc.destinationDir
 }
 
 artifacts {
-	archives sourcesJar
-	archives javadocJar
+	archives packageSources
+	archives packageJavadoc
 }
 
 test {
@@ -102,7 +107,7 @@ checkstyle {
 
 spotbugs {
 	// http://gradle.monochromeroad.com/docs/dsl/org.gradle.api.plugins.quality.FindBugsExtension.html
-	toolVersion = '3.1.1'
+	toolVersion = '3.1.3'
 	ignoreFailures = false
 	effort = 'max'
 	reportLevel = 'high'
