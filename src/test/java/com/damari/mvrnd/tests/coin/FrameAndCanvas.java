@@ -17,6 +17,8 @@ public class FrameAndCanvas extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
+	private JFrame frame;
+
 	private BufferedImage canvas;
 	private BufferedImage canvasCopy;
 
@@ -24,7 +26,7 @@ public class FrameAndCanvas extends JPanel {
 		canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		fillCanvas(bgColor);
 
-		JFrame frame = new JFrame(topic);
+		frame = new JFrame(topic);
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.setLocation(dim.width / 2 - width / 2, dim.height / 2 - height / 2);
 		frame.add(this);
@@ -32,6 +34,10 @@ public class FrameAndCanvas extends JPanel {
 		frame.setVisible(true);
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+
+	public void close() {
+		frame.dispose();
 	}
 
 	public Dimension getPreferredSize() {

@@ -121,6 +121,7 @@ public class TestThePeriod {
 			frame.text(200, 180 + c * 40, coins.get(c) + " - " + results.get(c), new Color(colors[c]), new Font("Serif", Font.BOLD, 24));
 		}
 		Thread.sleep(15000);
+		frame.close();
 	}
 
 }
