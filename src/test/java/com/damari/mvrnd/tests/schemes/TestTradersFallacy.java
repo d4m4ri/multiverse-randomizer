@@ -12,11 +12,10 @@ import org.slf4j.LoggerFactory;
 
 import com.damari.mvrnd.coin.Coin;
 import com.damari.mvrnd.coin.CoinXoRoShiRo128PlusRandom;
-import com.damari.mvrnd.tests.algorithm.TestBuyAndHoldAlgo;
 
 public class TestTradersFallacy {
 
-	private static final Logger log = LoggerFactory.getLogger(TestBuyAndHoldAlgo.class.getName());
+	private static final Logger log = LoggerFactory.getLogger(TestTradersFallacy.class.getName());
 
 	@Test
 	public void givenTrading10gAt50_50ThenExpectToLoseAllYourMoney() {
